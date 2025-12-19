@@ -1,0 +1,20 @@
+{
+  "name": "roleplay-generator",
+  "version": "1.0.0",
+  "description": "School-safe Roleplay Script Generator",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "dev:watch": "node --watch server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "docx": "^8.2.3"
+  }
+}

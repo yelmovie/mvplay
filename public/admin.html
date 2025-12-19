@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>관리자 잠금 해제</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="topActions">
+      <a class="topPill" href="/" aria-label="대본 생성기로 이동">
+        <span class="topPillIcon" aria-hidden="true">←</span>
+        돌아가기
+      </a>
+      <button id="themeToggle" class="topPill" type="button" aria-label="테마 전환">
+        <span id="themeToggleIcon" class="topPillIcon" aria-hidden="true"></span>
+        <span id="themeToggleText">테마</span>
+      </button>
+    </div>
+
+    <main class="wrap">
+      <h1>관리 게시판</h1>
+
+      <section>
+        <p class="samplesHint" style="margin-top: 0">
+          관리자만 볼 수 있습니다.
+        </p>
+
+        <label for="pw">비밀번호</label>
+        <input id="pw" type="password" placeholder="관리자 비밀번호" />
+
+        <div class="row">
+          <button id="btnLogin">잠금 해제</button>
+          <span class="samplesHint">7일간 유지</span>
+        </div>
+
+        <p class="msg" id="msg"></p>
+      </section>
+    </main>
+
+    <script type="module" src="/admin.js"></script>
+  </body>
+</html>
+
+
+

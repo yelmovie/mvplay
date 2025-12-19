@@ -1,0 +1,734 @@
+/* =========================================================
+   Theme Tokens (One Source of Truth)
+   - Default: Light
+   - Dark: html[data-theme="dark"]
+   ========================================================= */
+:root {
+  /* base */
+  --bg: #f6f7fb;
+  --bg-elev: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+  --border: rgba(15, 23, 42, 0.12);
+  --shadow: 0 12px 32px rgba(2, 6, 23, 0.1);
+
+  /* =========================================================
+     MovieSSam pastel (cool, muted) - One Source of Truth
+     ========================================================= */
+  --ms-accent-from: rgba(186, 164, 255, 0.55); /* lavender */
+  --ms-accent-to: rgba(255, 162, 221, 0.45); /* soft pink */
+  --ms-cream-from: rgba(255, 251, 215, 0.75); /* cream pastel */
+  --ms-cream-to: rgba(255, 232, 179, 0.55);
+
+  --ms-glass-bg: rgba(255, 255, 255, 0.08);
+  --ms-glass-border: rgba(255, 255, 255, 0.16);
+  --ms-shadow: rgba(0, 0, 0, 0.22);
+
+  --ms-text-dark: #111;
+  --ms-text-light: rgba(255, 255, 255, 0.92);
+
+  --ms-focus: rgba(255, 255, 255, 0.3);
+
+  /* =========================================================
+     Theme Gradient Tokens (One Source of Truth)
+     - LIGHT: background=purple family, button=purple only
+     - DARK: background=neutral, button=pink only
+     ========================================================= */
+  /* Background gradient (LIGHT) - purple family */
+  --bg-grad-from: 270 80% 96%;
+  --bg-grad-via: 265 70% 94%;
+  --bg-grad-to: 255 70% 92%;
+
+  /* Primary button gradient (LIGHT) - purple only (NO pink) */
+  --btn-grad-from: 265 85% 60%;
+  --btn-grad-to: 245 85% 55%;
+
+  /* Focus ring */
+  --focus-ring: 265 85% 60%;
+
+  /* Neutral badge/chip accents (avoid purple+pink mix) */
+  --badge-bg: hsl(265 85% 60% / 0.14);
+  --badge-border: hsl(265 85% 60% / 0.28);
+
+  /* glass */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(15, 23, 42, 0.1);
+  --glass-blur: 14px;
+
+  /* radius */
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+
+  /* focus ring */
+  --ring: hsl(var(--focus-ring) / 0.35);
+}
+
+html[data-theme="dark"] {
+  --bg: #060612;
+  --bg-elev: rgba(255, 255, 255, 0.04);
+  --text: #eef2ff;
+  --muted: rgba(226, 232, 240, 0.75);
+  --border: rgba(255, 255, 255, 0.1);
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+
+  /* MovieSSam pastel adjustments for dark (softer) */
+  --ms-glass-bg: rgba(255, 255, 255, 0.06);
+  --ms-glass-border: rgba(255, 255, 255, 0.14);
+  --ms-shadow: rgba(0, 0, 0, 0.35);
+
+  --ms-accent-from: rgba(196, 176, 255, 0.45);
+  --ms-accent-to: rgba(255, 170, 227, 0.38);
+
+  --ms-cream-from: rgba(255, 251, 215, 0.55);
+  --ms-cream-to: rgba(255, 232, 179, 0.42);
+
+  --ms-focus: rgba(255, 255, 255, 0.28);
+
+  /* Background gradient (DARK) - neutral (no bright purple band) */
+  --bg-grad-from: 240 15% 10%;
+  --bg-grad-via: 250 18% 12%;
+  --bg-grad-to: 260 20% 14%;
+
+  /* Primary button gradient (DARK) - pink only (NO purple) */
+  --btn-grad-from: 325 90% 60%;
+  --btn-grad-to: 345 85% 55%;
+
+  --focus-ring: 330 90% 60%;
+
+  /* In dark, keep badges neutral so primary pink doesn't clash with purple */
+  --badge-bg: hsl(220 10% 60% / 0.16);
+  --badge-border: hsl(220 10% 60% / 0.26);
+
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 16px;
+
+  --ring: hsl(var(--focus-ring) / 0.35);
+}
+
+body {
+  font-family: "Noto Sans KR", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  background-image: linear-gradient(
+    135deg,
+    hsl(var(--bg-grad-from)) 0%,
+    hsl(var(--bg-grad-via)) 45%,
+    hsl(var(--bg-grad-to)) 100%
+  );
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Removed mixed-color glow overlay to avoid purple+pink clash across themes */
+
+.wrap {
+  width: 100%;
+  max-width: 1152px; /* ~max-w-6xl */
+  margin: 0 auto;
+  padding: 28px 24px;
+}
+
+h1,
+h2 {
+  color: var(--text);
+}
+
+h1 {
+  text-align: center;
+  margin: 24px 0 18px 0;
+}
+
+/* 섹션 제목(예: 대본 생성) */
+h2 {
+  /* 메인 제목(h1)보단 작고, 필드 라벨보단 크게 */
+  font-size: 1.25rem; /* ~text-xl */
+  font-weight: 600; /* ~font-semibold */
+  margin: 0 0 14px 0;
+}
+
+@media (min-width: 768px) {
+  .wrap {
+    padding: 36px 40px;
+  }
+  h2 {
+    font-size: 1.5rem; /* ~md:text-2xl */
+  }
+}
+
+section {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 768px; /* ~max-w-3xl */
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  line-height: 1.65; /* leading-relaxed */
+}
+
+/* Safety: widen only the main generator card (max-w-4xl) without impacting other pages/cards */
+#generator {
+  max-width: 896px; /* ~max-w-4xl */
+}
+
+label {
+  display: block;
+  margin-top: 1.25rem;
+  margin-bottom: 0;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+  label {
+    font-size: 1.125rem;
+  }
+}
+
+input[type="text"],
+input[type="number"],
+input[type="password"],
+input[type="email"],
+textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+  background: var(--bg-elev);
+  color: var(--text);
+}
+
+select {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+  /* keep glass tone, text auto by theme token */
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text);
+}
+
+/* ✅ Select 드롭다운 옵션 가독성(핵심): 펼쳤을 때 흰 배경 + 검정 글씨 강제 */
+select option,
+select optgroup {
+  color: #111 !important;
+  background: #fff !important;
+}
+
+/* 주제 입력(중앙/확대): textarea로 바뀐 #topic을 크게 */
+#topic {
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem; /* px-5 py-4 */
+  font-size: 1rem;
+  line-height: 1.5;
+  min-height: 72px;
+  resize: none; /* UI 깨짐 방지 */
+  max-width: 920px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  #topic {
+    font-size: 1.125rem; /* ~md:text-lg */
+  }
+}
+
+input[type="text"]:focus-visible,
+input[type="number"]:focus-visible,
+input[type="password"]:focus-visible,
+input[type="email"]:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+button {
+  /* default buttons => MovieSSam secondary glass (no 원색/쨍함) */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  color: var(--text);
+  border: 1px solid var(--ms-glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+  min-height: 48px;
+}
+
+@media (max-width: 640px) {
+  button {
+    width: 100%;
+  }
+}
+
+button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+button.ghost {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  color: var(--text);
+  border: 1px solid var(--ms-glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+button.ghost:hover {
+  filter: brightness(1.06);
+}
+
+button:disabled,
+button[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+
+/* 생성 CTA: 가운데 정렬 래퍼 */
+.ctaRow {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* MovieSSam Glass Base (utility) */
+.msGlassBase {
+  border: 1px solid var(--ms-glass-border);
+  background: var(--ms-glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 10px 30px var(--ms-shadow);
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+}
+
+/* MovieSSam Primary (Generate / DOCX): cream pastel + glass */
+.msBtnPrimary {
+  width: min(420px, 100%);
+  min-width: 180px;
+  color: var(--ms-text-dark);
+  font-weight: 800;
+  background: linear-gradient(
+    135deg,
+    var(--ms-cream-from) 0%,
+    var(--ms-cream-to) 100%
+  );
+  border: 1px solid var(--ms-glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 12px 28px var(--ms-shadow);
+}
+
+.msBtnPrimary:disabled,
+.msBtnPrimary[disabled] {
+  /* Disabled must be obvious + no hover/active affordance */
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+  box-shadow: none;
+}
+
+.msBtnPrimary:disabled:hover,
+.msBtnPrimary[disabled]:hover,
+.msBtnPrimary:disabled:active,
+.msBtnPrimary[disabled]:active {
+  transform: none;
+  filter: none;
+}
+
+.msBtnPrimary:disabled:focus-visible,
+.msBtnPrimary[disabled]:focus-visible {
+  outline: none;
+}
+
+.msBtnPrimary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.msBtnPrimary:active {
+  filter: brightness(0.95);
+  transform: translateY(0);
+}
+
+.msBtnPrimary:focus-visible {
+  outline: 3px solid var(--ms-focus);
+  outline-offset: 2px;
+}
+
+/* MovieSSam Secondary: subtle glass */
+.msBtnSecondary {
+  border-radius: var(--radius-lg);
+  padding: 0.65rem 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  border: 1px solid var(--ms-glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 10px 24px var(--ms-shadow);
+}
+
+.msBtnSecondary:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.msBtnSecondary:active {
+  filter: brightness(0.98);
+  transform: translateY(0);
+}
+
+.msBtnSecondary:focus-visible {
+  outline: 3px solid var(--ms-focus);
+  outline-offset: 2px;
+}
+
+.themeToggle {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-size: 0.92rem;
+}
+
+.topActions {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 50;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Brand Header (inline, non-fixed): scrolls away naturally */
+.brandHeaderInline {
+  width: 100%;
+  margin: 0 auto 10px auto;
+  max-width: 1152px; /* align with wrap */
+  padding-top: 18px; /* pt-5 느낌 */
+}
+
+.brandHeaderInlinePanel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap; /* 모바일에서 자연스러운 줄바꿈 허용 */
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+}
+
+.brandHeaderInlineIcon {
+  width: 24px;
+  height: 24px;
+  color: var(--text);
+  flex: 0 0 auto;
+}
+
+.brandHeaderInlineText {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.brandHeaderInlineTitle {
+  font-size: 1rem; /* text-base */
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.brandHeaderInlineMeta {
+  font-size: 0.8rem; /* text-xs */
+  font-weight: 600;
+  opacity: 0.7;
+  color: var(--text);
+}
+
+.brandHeaderInlineDot {
+  font-size: 0.8rem;
+  font-weight: 700;
+  opacity: 0.7;
+  color: var(--text);
+}
+
+@media (min-width: 768px) {
+  .brandHeaderInline {
+    padding-top: 20px;
+  }
+  .brandHeaderInlineIcon {
+    width: 28px;
+    height: 28px;
+  }
+  .brandHeaderInlineTitle {
+    font-size: 1.125rem; /* md:text-lg */
+  }
+  .brandHeaderInlineMeta,
+  .brandHeaderInlineDot {
+    font-size: 0.9rem; /* md:text-sm */
+  }
+}
+
+.topPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.topPill:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.topPill:active {
+  transform: translateY(0px);
+}
+
+.topPillIcon {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+}
+
+.themeToggleIcon {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.grid > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.hintCard {
+  margin-top: 0.6rem;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.75rem 0.9rem;
+}
+
+.hintTitle {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.hintBody {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.fieldHint {
+  margin-top: -0.4rem; /* pulls closer to textarea bottom margin */
+  margin-bottom: 0.9rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.fieldHint.isError {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.samplesWrap {
+  margin: 0.25rem 0 1rem 0;
+}
+
+.samplesHead {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+  margin: 0.25rem 0 0.5rem 0;
+}
+
+.samplesTitle {
+  font-weight: 800;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.samplesHint {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.sampleChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chipBtn {
+  /* MovieSSam chip: lavender -> soft pink pastel (muted) */
+  background: linear-gradient(
+    135deg,
+    var(--ms-accent-from) 0%,
+    var(--ms-accent-to) 100%
+  );
+  color: rgba(17, 17, 17, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 10px 22px var(--ms-shadow);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1.15;
+  text-align: left;
+  min-width: 0;
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+}
+
+.chipBtn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+html[data-theme="dark"] .chipBtn {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.chipBtn:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.hidden {
+  display: none;
+}
+
+.msg {
+  margin-top: 1rem;
+  font-weight: bold;
+  color: #ef4444;
+}
+
+.output {
+  background: var(--bg-elev);
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  white-space: pre-wrap;
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: monospace;
+  margin: 1rem 0;
+}
+
+/* Preview rendering (human readable) */
+.output.preview {
+  font-family: inherit;
+}
+
+.sceneCard {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.sceneTitle {
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  color: var(--text);
+}
+
+.lineRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0.35rem 0;
+}
+
+.speakerBadge {
+  flex: 0 0 auto;
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.lineText {
+  white-space: pre-wrap;
+}

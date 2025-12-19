@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>관리 게시판 - 제안 목록</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="topActions">
+      <a class="topPill" href="/suggest.html" aria-label="제안하기로 이동">
+        <span class="topPillIcon" aria-hidden="true">💡</span>
+        제안하기
+      </a>
+      <button id="themeToggle" class="topPill" type="button" aria-label="테마 전환">
+        <span id="themeToggleIcon" class="topPillIcon" aria-hidden="true"></span>
+        <span id="themeToggleText">테마</span>
+      </button>
+    </div>
+
+    <main class="wrap">
+      <h1>관리 게시판</h1>
+
+      <section>
+        <div class="row" style="justify-content: space-between">
+          <div class="samplesHint">제안 목록(최근순)</div>
+          <button id="btnRefresh" class="ghost" type="button">새로고침</button>
+        </div>
+
+        <div id="list"></div>
+        <p class="msg" id="msg"></p>
+      </section>
+
+      <section id="detailBox" class="hidden">
+        <h2>상세</h2>
+        <div id="detail"></div>
+      </section>
+    </main>
+
+    <script type="module" src="/admin/suggestions.js"></script>
+  </body>
+</html>
+
+
+

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>아이디어 제안하기</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="topActions">
+      <a class="topPill" href="/" aria-label="대본 생성기로 이동">
+        <span class="topPillIcon" aria-hidden="true">←</span>
+        돌아가기
+      </a>
+      <button id="themeToggle" class="topPill" type="button" aria-label="테마 전환">
+        <span id="themeToggleIcon" class="topPillIcon" aria-hidden="true"></span>
+        <span id="themeToggleText">테마</span>
+      </button>
+    </div>
+
+    <main class="wrap">
+      <h1>개발자에게 아이디어 제안하기</h1>
+
+      <section>
+        <p class="lineText" style="margin-top: 0">
+          개인정보(학생/학교/실명/연락처 등)는 입력하지 마세요.
+        </p>
+
+        <label for="category">카테고리</label>
+        <select id="category">
+          <option value="">선택(선택사항)</option>
+          <option value="기능">기능</option>
+          <option value="버그">버그</option>
+          <option value="UI">UI</option>
+          <option value="콘텐츠">콘텐츠</option>
+          <option value="기타">기타</option>
+        </select>
+
+        <label for="message">제안 내용</label>
+        <textarea
+          id="message"
+          rows="8"
+          placeholder="예: 과목별 샘플 주제 검색 기능이 있으면 좋겠습니다..."
+          style="width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-elev); color: var(--text); box-sizing: border-box;"
+        ></textarea>
+
+        <div class="row">
+          <button id="btnSubmit">제안 제출</button>
+          <span id="hint" class="samplesHint">20~1000자</span>
+        </div>
+
+        <p class="msg" id="msg"></p>
+      </section>
+
+      <section class="hidden" id="adminLinkBox">
+        <a class="topPill" href="/admin.html">관리</a>
+      </section>
+    </main>
+
+    <script type="module" src="/suggest.js"></script>
+  </body>
+</html>
+
+
+
