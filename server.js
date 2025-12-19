@@ -1322,4 +1322,9 @@ process.on("SIGINT", () => {
     .finally(() => process.exit(0));
 });
 
-await listenWithRetry();
+// Only listen if not running on Vercel (local development)
+if (!process.env.VERCEL) {
+  await listenWithRetry();
+}
+
+export default app;
