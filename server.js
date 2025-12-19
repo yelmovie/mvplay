@@ -8,12 +8,6 @@ import { fileURLToPath } from "url";
 import crypto from "crypto";
 
 import { callUpstageChat } from "./services/upstageClient.js";
-import { makeCharacterList } from "./services/characterList.js";
-import {
-  buildRetryInstruction,
-  repairScript,
-  validateAll,
-} from "./services/scriptConstraints.js";
 import {
   getSupabaseAdmin,
   getSupabaseAdminMissingKeys,
@@ -760,15 +754,6 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
       fastMode,
     } = validated.value;
 
-    const requestedChars = Number.isFinite(Number(charactersCount))
-      ? Number(charactersCount)
-      : 5;
-    const characterList = makeCharacterList({
-      count: requestedChars,
-      gradeBand,
-      seed: `${subject}|${gradeBand}|${grade}|${topic}`,
-    });
-
     // Fast mode: auto-adjust heavy parameters to make "30s 내 결과" 현실적으로 가능하게.
     const effectiveFastMode = fastMode !== false;
     const adjusted = {};
@@ -812,115 +797,24 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
       )
     );
 
-    // Constraint-driven generation: try up to 2 attempts, then deterministic repair.
-    const maxAttempts = Math.max(
-      1,
-      Math.min(2, Number(process.env.GENERATE_MAX_ATTEMPTS || 2))
-    );
-    let attempt = 0;
-    let lastValidation = null;
-    let result = null;
-    let repaired = false;
-    let repairNotes = null;
-    let constraintNotice = "";
-
-    const expectedScenes = Number.isFinite(Number(effScenesCount))
-      ? Number(effScenesCount)
-      : Number.isFinite(Number(scenesCount))
-      ? Number(scenesCount)
-      : 3;
-
-    while (attempt < maxAttempts) {
-      attempt += 1;
-      const extraInstruction =
-        attempt === 1
-          ? ""
-          : buildRetryInstruction({
-              characterList,
-              details: lastValidation?.details || [],
-              gradeBand,
-              grade,
-            });
-
-      console.log(
-        `[generate:${reqId}] upstream-call attempt=${attempt}/${maxAttempts}`
-      );
-      result = await callUpstageChat({
-        subject,
-        topic,
-        topicRationale,
-        grade,
-        gradeBand,
-        durationMin: effDurationMin,
-        groupSize,
-        scenesCount: effScenesCount,
-        charactersCount: requestedChars,
-        characterList,
-        coreValues,
-        era,
-        discussionMode: options.discussionMode,
-        // Ensure the whole upstream generation (including retry) stays within the upstream budget.
-        timeoutMs: upstreamTimeoutMs,
-        fastMode: effectiveFastMode,
-        extraInstruction,
-      });
-
-      // Always override/echo the server characterList in the final object.
-      result.characterList = characterList.slice();
-
-      lastValidation = validateAll({
-        script: result,
-        characterList,
-        scenesCount: expectedScenes,
-        gradeBand,
-        grade,
-      });
-
-      if (lastValidation.ok) {
-        console.log(`[generate:${reqId}] constraints ok`);
-        break;
-      }
-
-      console.warn(
-        `[generate:${reqId}] constraints failed attempt=${attempt}`,
-        JSON.stringify(lastValidation.details || []).slice(0, 500)
-      );
-      if (attempt >= maxAttempts) break;
-    }
-
-    // Always run deterministic repair to fix auto-repairable issues (e.g., TOO_MANY_SENTENCES)
-    // and to guarantee speaker/scenes constraints if possible.
-    if (result) {
-      const repairedResult = repairScript({
-        script: result,
-        characterList,
-        scenesCount: expectedScenes,
-        gradeBand,
-        grade,
-      });
-      result = repairedResult.script;
-      repaired = Boolean(repairedResult.repaired);
-      repairNotes = repairedResult.repairNotes;
-      if (repaired) constraintNotice = "조건을 맞추기 위해 자동 보정됨";
-
-      const finalValidation = repairedResult.finalValidation;
-      if (!finalValidation?.ok) {
-        console.error(
-          `[generate:${reqId}] repair failed`,
-          JSON.stringify(finalValidation?.details || []).slice(0, 800)
-        );
-        if (!canRespond()) return;
-        return res.status(502).json({
-          ok: false,
-          requestId: reqId,
-          error: {
-            code: "CONSTRAINT_VIOLATION",
-            details: finalValidation?.details || [],
-          },
-        });
-      }
-    }
-
+    console.log(`[generate:${reqId}] upstage_call begin`);
+    const result = await callUpstageChat({
+      subject,
+      topic,
+      topicRationale,
+      grade,
+      gradeBand,
+      durationMin: effDurationMin,
+      groupSize,
+      scenesCount: effScenesCount,
+      charactersCount: effCharsCount,
+      coreValues,
+      era,
+      discussionMode: options.discussionMode,
+      // Ensure the whole upstream generation (including retry) stays within the upstream budget.
+      timeoutMs: upstreamTimeoutMs,
+      fastMode: effectiveFastMode,
+    });
     console.log(
       `[generate:${reqId}] upstage_call done in ${Date.now() - t0}ms`
     );
@@ -944,7 +838,6 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
       result.header = result.header || {};
       result.header.era = era;
     }
-    result.characterList = characterList.slice();
 
     const insertPayload = {
       topic_title: topic,
@@ -975,16 +868,8 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
         ok: true,
         requestId: reqId,
         scriptId: data.id,
-        // Required shape (new)
-        data: result,
-        characterList,
-        repaired,
-        repairNotes,
-        // Backward-compat
         script: result,
-        ...(notice || constraintNotice
-          ? { notice: [notice, constraintNotice].filter(Boolean).join(" · ") }
-          : {}),
+        ...(notice ? { notice } : {}),
         ...(Object.keys(adjusted).length ? { adjusted } : {}),
         mode: effectiveFastMode ? "fast" : "full",
       });
@@ -999,14 +884,8 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
         ok: true,
         requestId: reqId,
         scriptId: "",
-        // Required shape (new)
-        data: result,
-        characterList,
-        repaired,
-        repairNotes,
-        // Backward-compat
         script: result,
-        notice: [notice, constraintNotice].filter(Boolean).join(" · "),
+        notice,
         saved: false,
         ...(Object.keys(adjusted).length ? { adjusted } : {}),
         mode: effectiveFastMode ? "fast" : "full",
@@ -1322,9 +1201,4 @@ process.on("SIGINT", () => {
     .finally(() => process.exit(0));
 });
 
-// Only listen if not running on Vercel (local development)
-if (!process.env.VERCEL) {
-  await listenWithRetry();
-}
-
-export default app;
+await listenWithRetry();

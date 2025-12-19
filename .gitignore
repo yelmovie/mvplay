@@ -7,3 +7,5 @@ C:\Users\user\.gemini\antigravity\brain\99570a76-dded-4cf6-b7db-98e1f584cf3e
 # Local env files (do not commit secrets)
 env.local
 env.*.local
+
+.vercel

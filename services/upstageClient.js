@@ -479,13 +479,11 @@ export async function callUpstageChat({
   groupSize,
   scenesCount,
   charactersCount,
-  characterList,
   coreValues,
   topicRationale,
   discussionMode,
   timeoutMs,
   fastMode,
-  extraInstruction: extraInstructionParam,
 }) {
   const baseUrl = process.env.UPSTAGE_BASE_URL;
   const apiKey = process.env.UPSTAGE_API_KEY;
@@ -496,22 +494,6 @@ export async function callUpstageChat({
   const isFastMode = fastMode !== false;
   const rules = LENGTH_RULES[gradeBand] || LENGTH_RULES.MID;
   const plan = computeDialoguePlan(durationMin, scenesCount);
-  const fixedCharacters = Array.isArray(characterList)
-    ? characterList.map(String).filter(Boolean)
-    : null;
-  const expectedChars = Number.isFinite(Number(charactersCount))
-    ? Number(charactersCount)
-    : fixedCharacters?.length || 5;
-  const charList =
-    fixedCharacters && fixedCharacters.length
-      ? fixedCharacters.slice(0, expectedChars)
-      : null;
-
-  const minLinesPerScene = Math.max(
-    6,
-    Math.min(14, Math.ceil(expectedChars / Math.max(1, plan.scenes)))
-  );
-  const maxLinesPerScene = Math.max(minLinesPerScene, Math.min(14, minLinesPerScene + 4));
 
   // durationMin에 따른 선형 보간 대신 간단한 3단계 스케일 적용
   let targetLines;
@@ -537,7 +519,6 @@ export async function callUpstageChat({
     : "";
 
   const fastSchema = `{
-  "characterList": ["이름1","이름2"],
   "header": { "title": "제목", "subject": "과목", "grade": 4, "duration_min": 5, "group_size": 5 },
   "situation_roles": "상황 및 역할(해설) - 3~5문장",
   "key_terms": [
@@ -552,6 +533,7 @@ export async function callUpstageChat({
         "scene_title": "장면 제목",
         "stage_directions": ["무대지시 1줄"],
         "lines": [
+          { "speaker": "내레이터", "text": "1줄" },
           { "speaker": "이름", "text": "대사" }
         ]
       }
@@ -564,18 +546,11 @@ export async function callUpstageChat({
 반드시 아래 JSON 스키마를 만족하는 "짧은 대본"을 생성하세요.
 
 [속도 우선]
-- 출력은 짧게: 장면 ${plan.scenes}개, 장면당 대사(lines) ${minLinesPerScene}~${maxLinesPerScene}줄.
+- 출력은 짧게: 장면 ${plan.scenes}개, 장면당 대사(lines) 6~8줄 이내.
 - 무대지시(stage_directions)는 장면당 1줄.
 - 핵심 용어(key_terms)는 3개 이내.
-- characters는 정확히 ${expectedChars}명. (순서는 characterList와 일치)
+- characters는 ${Number.isFinite(Number(charactersCount)) ? Number(charactersCount) : 5}명 이내(가능하면 4~6명).
 - 불필요한 장문 설명 금지. JSON 외 텍스트 금지. 코드펜스 금지.
-
-[화자 규칙(가장 중요)]
-- speaker는 아래 characterList에 있는 이름만 사용하세요. 다른 이름/내레이터/선생님 금지.
-- 모든 캐릭터가 최소 1번 이상 말해야 합니다.
-- 반드시 characterList를 그대로 echo하고, characters[].name도 characterList와 동일한 이름만 사용하세요.
-
-characterList: ${charList ? JSON.stringify(charList) : "[]"}
 
 [스키마]
 ${fastSchema}
@@ -658,18 +633,10 @@ ${historyNoModern}
 - humor_type: "상황 유머" | "말투 유머" | "관찰 유머" 중 1개
 - insight_line은 해당 장면의 대사(lines.text)에 그대로 1번 포함되어야 합니다.
 - humor_beats: 웃음 포인트 0~2개 배열(총 2~4개). 각 항목은 {type, line_index}.
-- (중요) 내레이터/선생님/임의 인물 금지: speaker는 characterList에 있는 이름만 사용합니다.
-
-[화자 규칙(가장 중요)]
-- speaker는 아래 characterList에 있는 이름만 사용하세요. 다른 이름/내레이터/선생님 금지.
-- 모든 캐릭터가 최소 1번 이상 말해야 합니다.
-- characterList를 그대로 echo하고, characters[].name도 characterList와 동일한 이름만 사용하세요.
-
-characterList: ${charList ? JSON.stringify(charList) : "[]"}
+- 내레이터: 각 장면의 lines 첫 1~2줄은 speaker="내레이터"로 작성(짧게).
 
 [스키마 - 워크시트형(풍부) 고정]
 {
-  "characterList": ["이름1","이름2"],
   "header": { "title": "제목", "subject": "과목", "grade": 4, "duration_min": 5, "group_size": 5, "characters_count": 5, "scenes_count": 3 },
   "situation_roles": "상황 및 역할(해설) - 5~8문장",
   "key_terms": [
@@ -689,6 +656,7 @@ characterList: ${charList ? JSON.stringify(charList) : "[]"}
         "humor_type": "상황 유머",
         "humor_beats": [{ "type": "말투 유머", "line_index": 2 }],
         "lines": [
+          { "speaker": "내레이터", "text": "장면 시작/전환을 1~2문장으로 잡는다." },
           { "speaker": "이름", "text": "대사" }
         ]
       }
@@ -762,12 +730,8 @@ Output: Return ONLY a single JSON object. No markdown, no code fences, no extra 
   async function callOnce(temp, extraInstruction) {
     const url = `${baseUrl}/chat/completions`;
 
-    const combinedExtra = [extraInstruction, extraInstructionParam]
-      .filter((x) => typeof x === "string" && x.trim())
-      .join("\n\n");
-
-    const sys = combinedExtra
-      ? `${(isFastMode ? systemPromptFast : systemPrompt)}\n\n[추가 지시]\n${combinedExtra}`.trim()
+    const sys = extraInstruction
+      ? `${(isFastMode ? systemPromptFast : systemPrompt)}\n\n[추가 지시]\n${extraInstruction}`.trim()
       : isFastMode
       ? systemPromptFast
       : systemPrompt;
@@ -858,27 +822,6 @@ Output: Return ONLY a single JSON object. No markdown, no code fences, no extra 
       charactersCount,
     });
 
-    // Force server-provided characterList to be the source of truth.
-    if (Array.isArray(charList) && charList.length) {
-      parsed.characterList = charList.slice();
-      // Ensure characters[] follows the list order/name.
-      if (Array.isArray(parsed.characters)) {
-        const byName = new Map(
-          parsed.characters
-            .filter((c) => c && typeof c === "object")
-            .map((c) => [String(c.name || "").trim(), c])
-        );
-        parsed.characters = charList.map((name) => {
-          const existing = byName.get(name);
-          return {
-            name,
-            description: existing?.description || "",
-            speech_tip: existing?.speech_tip || "",
-          };
-        });
-      }
-    }
-
     if (!isFastMode) {
       if (
         typeof parsed.situation_roles !== "string" ||
@@ -890,11 +833,13 @@ Output: Return ONLY a single JSON object. No markdown, no code fences, no extra 
         throw invalidJsonFromModel("key_terms too short");
       }
     }
-    const targetChars = Array.isArray(charList) && charList.length ? charList.length : Number.isFinite(Number(charactersCount)) ? Number(charactersCount) : null;
+    const targetChars = Number.isFinite(Number(charactersCount))
+      ? Number(charactersCount)
+      : null;
     if (!Array.isArray(parsed.characters) || parsed.characters.length < 3) {
       throw invalidJsonFromModel("characters too short");
     }
-    if (targetChars && parsed.characters.length !== targetChars) {
+    if (!isFastMode && targetChars && parsed.characters.length !== targetChars) {
       throw invalidJsonFromModel("characters count mismatch");
     }
     if (
