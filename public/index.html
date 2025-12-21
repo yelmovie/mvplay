@@ -3,46 +3,33 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>RolePlay Builder</title>
+    <title>과목 선택</title>
     <link rel="stylesheet" href="/styles.css?v=1.0.1" />
   </head>
-
   <body>
     <div class="topActions">
-      <a
-        class="topPill"
-        href="/suggest.html"
-        aria-label="개발자에게 아이디어 제안하기"
-      >
-        <span class="topPillIcon" aria-hidden="true">💡</span>
-        제안하기
+      <a class="topPill" href="/" aria-label="대본 생성기로 이동">
+        <span class="topPillIcon" aria-hidden="true">←</span>
+        돌아가기
       </a>
-      <a class="topPill" href="/subjects/" aria-label="과목 자료로 이동">
+      <a class="topPill" href="/subjects/" aria-label="과목 선택으로 이동">
         <span class="topPillIcon" aria-hidden="true">📚</span>
         과목
       </a>
-      <button
-        id="themeToggle"
-        class="topPill"
-        type="button"
-        aria-label="테마 전환"
-      >
-        <span
-          id="themeToggleIcon"
-          class="topPillIcon"
-          aria-hidden="true"
-        ></span>
+      <a class="topPill" href="/suggest.html" aria-label="개발자에게 아이디어 제안하기">
+        <span class="topPillIcon" aria-hidden="true">💡</span>
+        제안하기
+      </a>
+      <button id="themeToggle" class="topPill" type="button" aria-label="테마 전환">
+        <span id="themeToggleIcon" class="topPillIcon" aria-hidden="true"></span>
         <span id="themeToggleText">테마</span>
       </button>
     </div>
+
     <main class="wrap">
       <div class="brandHeaderInline" aria-label="브랜드 헤더">
         <div class="brandHeaderInlinePanel">
-          <svg
-            class="brandHeaderInlineIcon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
+          <svg class="brandHeaderInlineIcon" viewBox="0 0 24 24" aria-hidden="true">
             <path
               fill="currentColor"
               d="M5.2 7.5 7.5 3.5h11l-2.3 4H5.2Zm.3 1.5h13.7c.7 0 1.3.6 1.3 1.3v8.9c0 1.6-1.3 2.8-2.8 2.8H7.8c-1.6 0-2.8-1.3-2.8-2.8v-8.9c0-.7.6-1.3 1.3-1.3Z"
@@ -67,152 +54,23 @@
           </div>
         </div>
       </div>
-      <h1>역할극 대본 자동 생성기</h1>
 
-      <section id="generator">
-        <h2>대본 생성</h2>
+      <header class="subjectsHero" aria-label="과목 선택 안내">
+        <div class="subjectsHeroBadge">RolePlay Builder</div>
+        <h1 class="subjectsHeroTitle">역할극 대본 자동 생성기</h1>
+        <p class="subjectsHeroDesc">
+          국어/사회/도덕/역사 중 하나를 선택하면, 해당 과목 페이지에서
+          역할극 대본 생성기 화면이 그대로 열립니다.
+        </p>
+      </header>
 
-        <div class="row" style="align-items: flex-end">
-          <div style="flex: 1 1 auto">
-            <label for="subject">과목</label>
-            <select id="subject">
-              <option value="국어" selected>국어</option>
-              <option value="사회">사회</option>
-              <option value="도덕">도덕</option>
-              <option value="역사">역사</option>
-            </select>
-          </div>
-        </div>
-
-        <label>주제</label>
-        <textarea
-          id="topic"
-          rows="2"
-          placeholder="직접 입력 가능 · 예) 갈등 대화 연습 / 주장-근거 말하기 / 인물 인터뷰 대본"
-        ></textarea>
-        <div
-          id="topicRequiredHint"
-          class="fieldHint"
-          role="note"
-          aria-live="polite"
-        ></div>
-        <div class="hintCard" role="note" aria-label="주제 직접 입력 안내">
-          <div class="hintTitle">✍️ 주제는 직접 입력해도 돼요</div>
-          <div class="hintBody">
-            아래 입력칸에 원하는 상황을 써도 되고, 샘플을 눌러 시작해도 됩니다.
-          </div>
-        </div>
-
-        <div class="samplesWrap" aria-label="주제 샘플 영역">
-          <div class="samplesHead">
-            <span class="samplesTitle">주제 샘플(20)</span>
-            <span class="samplesHint">클릭하면 주제가 입력됩니다.</span>
-          </div>
-          <div
-            id="topicSamples"
-            class="sampleChips"
-            aria-label="주제 샘플 목록"
-          ></div>
-        </div>
-
-        <div class="grid">
-          <div>
-            <label>학년 모드(저/중/고)</label>
-            <select id="gradeBand">
-              <option value="LOW">저학년(1~2)</option>
-              <option value="MID" selected>중학년(3~4)</option>
-              <option value="HIGH">고학년(5~6)</option>
-            </select>
-          </div>
-          <div>
-            <label>학년(상세)</label>
-            <select id="grade">
-              <option value="1">1학년</option>
-              <option value="2">2학년</option>
-              <option value="3">3학년</option>
-              <option value="4" selected>4학년</option>
-              <option value="5">5학년</option>
-              <option value="6">6학년</option>
-            </select>
-          </div>
-          <div>
-            <label>모둠 인원(3~12)</label>
-            <input id="groupSize" type="number" min="3" max="12" value="5" />
-          </div>
-          <div>
-            <label>시간(3~20분)</label>
-            <input id="durationMin" type="number" min="3" max="20" value="5" />
-          </div>
-          <div>
-            <label>등장인물 수(3~12)</label>
-            <input
-              id="charactersCount"
-              type="number"
-              min="3"
-              max="12"
-              value="5"
-            />
-          </div>
-          <div>
-            <label>장면 수(1~8)</label>
-            <input id="scenesCount" type="number" min="1" max="8" value="3" />
-          </div>
-        </div>
-
-        <label class="row">
-          <input id="discussionMode" type="checkbox" />
-          토의/글쓰기까지 이어지게(옵션)
-        </label>
-
-        <div class="ctaRow">
-          <button id="btnGenerate" class="msBtnPrimary">생성</button>
-        </div>
-
-        <div id="output" class="output preview"></div>
-
-        <details id="advancedPanel" class="hidden">
-          <summary>고급(개발자용)</summary>
-          <div class="row">
-            <button id="btnToggleJson" class="msBtnSecondary" type="button">
-              JSON 보기
-            </button>
-            <button
-              id="btnCopyJson"
-              class="msBtnSecondary"
-              type="button"
-              disabled
-            >
-              JSON 복사
-            </button>
-          </div>
-          <pre id="jsonOutput" class="output hidden"></pre>
-          <div class="row">
-            <input id="scriptId" placeholder="scriptId(디버그용)" readonly />
-          </div>
-        </details>
-
-        <div class="row">
-          <label
-            ><input type="checkbox" id="checkTwoColumn" checked /> 학생용/교사용
-            2단 구성</label
-          >
-          <label
-            ><input type="checkbox" id="checkStandards" checked />
-            성취기준(근거) 함께 넣기</label
-          >
-        </div>
-
-        <div class="ctaRow">
-          <button id="btnExport" class="msBtnPrimary" disabled>
-            먼저 대본을 생성하세요
-          </button>
-        </div>
-
-        <p class="msg" id="genMsg"></p>
-        <div class="ctaRow" id="genActions" aria-label="생성 오류 조치"></div>
+      <section class="subjectsSection" aria-label="과목 카드 목록">
+        <div id="subjectsGrid" class="subjectsGrid" role="list"></div>
       </section>
     </main>
 
-    <script type="module" src="/app.js?v=1.0.1"></script>
+    <script type="module" src="/subjects/subjectsPage.js?v=1.0.1"></script>
   </body>
 </html>
+
+
