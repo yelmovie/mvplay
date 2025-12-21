@@ -635,7 +635,7 @@ function validateGenerateInput(body) {
   ) {
     const n = Number(scenesCountRaw);
     if (!Number.isFinite(n)) return { ok: false, field: "scenesCount" };
-    if (n < 1 || n > 8) return { ok: false, field: "scenesCount" };
+    if (n < 1 || n > 10) return { ok: false, field: "scenesCount" }; // Max 10 scenes
     scenesCount = n;
   }
 
@@ -698,8 +698,8 @@ function recommendScenesCount({ durationMin, groupSize, discussionMode }) {
   // Discussion/writing option tends to need more structure
   if (discuss) n += 1;
 
-  // Clamp to safe range (server allows 1~8)
-  n = Math.max(1, Math.min(8, n));
+  // Clamp to safe range (server allows 1~10)
+  n = Math.max(1, Math.min(10, n));
   return n;
 }
 
@@ -1333,4 +1333,11 @@ process.on("SIGINT", () => {
     .finally(() => process.exit(0));
 });
 
-await listenWithRetry();
+// Only start HTTP server if NOT running in Vercel serverless environment
+if (!process.env.VERCEL) {
+  await listenWithRetry();
+} else {
+  console.log("[vercel] Running in serverless mode, skipping HTTP server startup");
+}
+
+export default app;

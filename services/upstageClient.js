@@ -517,16 +517,69 @@ export async function callUpstageChat({
 - 애매한 사실은 "기록에 따르면/전해진다"로 처리(과용 금지).`
     : "";
 
-  // [English Subject] Enforce English Output
-  const englishModeBlock =
-    subject === "영어" || subject === "english"
-      ? `\n[CRITICAL: ENGLISH OUTPUT REQUIRED]
-- Write the entire script / response in ENGLISH ONLY.
-- Key terms, Scene titles, Lines, Explanations, Teacher tips, Feedback questions MUST BE English.
-- Do NOT include any Korean characters.`
-      : "";
+  // [English Subject] Enforce STRICT English Output
+  const isEnglishSubject = subject === "영어" || subject === "english";
+  
+  const englishModeBlock = isEnglishSubject
+    ? `\n[CRITICAL: ENGLISH-ONLY OUTPUT - NO KOREAN ALLOWED]
+- YOU MUST WRITE THE ENTIRE SCRIPT IN ENGLISH ONLY.
+- ALL scene_title, lines.text, situation_roles, key_terms, teacher_tips, lesson_points MUST BE ENGLISH.
+- DO NOT MIX KOREAN AND ENGLISH. English only in the main script.
+- After the main English script, add a separate "translation_korean" section at the END with Korean translations.
+- If you write ANY Korean in the main script sections, the output will be REJECTED.
 
-  const fastSchema = `{
+Example structure for ENGLISH subject:
+{
+  "situation_roles": "Elementary students practice apologizing in English...",
+  "key_terms": [{"term": "Apology", "easy_def": "Saying sorry", "example": "I'm sorry for being late."}],
+  "characters": [{"name": "Mia", "description": "Cheerful student", "speech_tip": "Speak clearly"}],
+  "script": {
+    "scenes": [{
+      "scene_title": "Classroom Conflict",
+      "lines": [
+        {"speaker": "Narrator", "text": "Scene 1: The classroom."},
+        {"speaker": "Mia", "text": "I'm really sorry!"}
+      ]
+    }]
+  },
+  "translation_korean": {
+    "situation_roles_kr": "초등학생들이 영어로 사과하는 연습을...",
+    "scenes_kr": [{
+      "scene_title_kr": "교실 갈등",
+      "lines_kr": [
+        {"speaker": "내레이터", "text": "장면 1: 교실."},
+        {"speaker": "미아", "text": "정말 미안해!"}
+      ]
+    }]
+  }
+}`
+    : "";
+
+  // Schemas: Use English schema for English subject
+  const fastSchema = isEnglishSubject
+    ? `{
+  "header": { "title": "Title", "subject": "English", "grade": 4, "duration_min": 5, "group_size": 5 },
+  "situation_roles": "Situation and Roles (3-5 sentences in English)",
+  "key_terms": [
+    { "term": "Term", "easy_def": "Definition (1 sentence)", "example": "Example sentence" }
+  ],
+  "characters": [
+    { "name": "Name", "description": "Personality", "speech_tip": "Speech tip" }
+  ],
+  "script": {
+    "scenes": [
+      {
+        "scene_title": "Scene Title",
+        "stage_directions": ["Stage direction"],
+        "lines": [
+          { "speaker": "Narrator", "text": "Line in English" },
+          { "speaker": "Name", "text": "Dialogue in English" }
+        ]
+      }
+    ]
+  }
+}`.trim()
+    : `{
   "header": { "title": "제목", "subject": "과목", "grade": 4, "duration_min": 5, "group_size": 5 },
   "situation_roles": "상황 및 역할(해설) - 3~5문장",
   "key_terms": [
@@ -557,6 +610,7 @@ export async function callUpstageChat({
 - You MUST output ONLY valid JSON.
 - No markdown, no introductory text, no "Here is the result".
 - If you cannot comply, output {"error":"FORMAT_ERROR"} only.
+${englishModeBlock}
 
 [속도 우선]
 - 출력은 짧게: 장면 ${plan.scenes}개, 장면당 대사(lines) 6~8줄 이내.
@@ -594,14 +648,16 @@ ${fastSchema}
 ${historyHumorBlock}
 ${englishModeBlock}
 
-[톤 목표]
+[톤 목표 - 교육적 깊이 필수]
 - 아이들이 웃고 몰입하는 재치·유머가 있으면서도, 역사/사회/도덕의 핵심 통찰이 자연스럽게 남아야 합니다.
-- 억지 설정(갑툭튀 밈, 무리한 현대물, 과장된 캐릭터 붕괴)은 금지합니다.
+- [현실감 중시]: 실제 학교/가정/사회에서 벌어질 법한 상황으로 구성. 억지 설정(갑툭튀 밈, 무리한 현대물, 과장된 캐릭터 붕괴) 금지.
+- [통찰과 성장]: 단순 웃음이 아니라, 캐릭터가 깨달음을 얻고 행동이 변화하는 과정을 보여야 함.
+- [교육과정 연계]: 해당 학년 성취기준(의사소통/문화이해/협력 등)을 자연스럽게 녹여냄.
 
 [유머 원칙(허용 3종)]
-- 상황 유머: 긴장/오해/타이밍에서 웃음(과장 X)
-- 말투 유머: 짧은 말장난/되묻기/리듬감(밈 X)
-- 관찰 유머: 사람 심리를 살짝 찌르는 한 줄(비난/조롱 X)
+- 상황 유머: 긴장/오해/타이밍에서 웃음(과장 X, 현실성 유지)
+- 말투 유머: 짧은 말장난/되묻기/리듬감(밈 X, 품위 유지)
+- 관찰 유머: 사람 심리를 살짝 찌르는 한 줄(비난/조롱 X, 공감 유도)
 
 [금지]
 - 폭력·혐오·외모 조롱·차별적 농담 금지
@@ -614,13 +670,16 @@ ${historyNoModern}
 - 설교체 금지. 짧고 그림 그려지는 묘사로 씁니다.
 - 설명을 길게 끌지 말고 핵심은 인물 대사로 처리합니다.
 
-[학년별 난이도 조절 규칙]
+[학년별 난이도 조절 규칙 - 교육부 권장 어휘 기준]
 - 학년 모드: ${gradeBand} (${rules.vocab})
 - 문장 길이: ${rules.sentenceLen}
 - 역할당 목표 대사 수: ${targetLines}줄 내외
-- 1~2학년: 짧은 문장, 매우 쉬운 낱말을 사용하고 감탄사나 의성어/의태어, 단어 반복을 활용하여 흥미를 유발하세요.
-- 3~4학년: 초등 교과서 수준의 어휘를 사용하고, 인물이 행동이나 감정의 이유를 한 문장 정도 설명하게 하세요.
-- 5~6학년: 해당 주제와 관련된 사회/과학/역사 핵심 용어를 2~3개 자연스럽게 포함하고, 논리적인 연결어(그래서, 하지만, 따라서 등)를 활용하세요.
+- [Grade ${grade}년 어휘 수준 엄수]:
+  - 1~2학년: 800~1200단어 수준. 짧은 문장(3~5단어), 의성어/의태어, 단어 반복으로 흥미 유발.
+  - 3~4학년: 1500~2500단어 수준. 교과서 어휘 사용. 인물의 감정/행동 이유를  1문장으로 설명. 복합문 가능.
+    * 영어 4학년: "Hello, Nice to meet you, friend, family, like, want, play, eat, go, come, help, thank, sorry" 등 기초 의사소통 표현 중심.
+  - 5~6학년: 3000~4500단어 수준. 주제 핵심 용어 2~3개 자연스럽게 포함. 논리 연결어(그래서/하지만/따라서) 활용.
+- [억지 어려운 단어 금지]: 학년 수준을 넘어서는 전문 용어나 추상 개념은 배제하세요.
 
 [필수 원칙]
 - 시간(분)이 짧아도 워크시트 섹션은 유지합니다. 줄이는 것은 "대본의 대사량" 위주로만 조절합니다.
@@ -632,12 +691,18 @@ ${historyNoModern}
 - 생소한 용어가 필요한 경우 대사 흐름 안에서 짧게 풀어 설명하세요.
 - 성취기준은 "검증된 매핑 데이터"가 없으면 코드/번호를 단정하지 말고, "관련 성취기준(요약)" 형태로만 작성하며 "(확인 필요)" 라벨을 붙이세요.
 
-[분량 정책]
+[CRITICAL: EXACT PARAMETER MATCHING - MUST FOLLOW]
+- header.duration_min MUST EXACTLY MATCH the input DurationMin (${durationMin}). DO NOT change it to 5 or 8 if user requested 20.
+- header.characters_count MUST EXACTLY MATCH the input CharactersCount. If CharactersCount=${Number.isFinite(Number(charactersCount)) ? Number(charactersCount) : groupSize}, create EXACTLY ${Number.isFinite(Number(charactersCount)) ? Number(charactersCount) : groupSize} characters in the characters array.
+- header.group_size MUST be ${groupSize}.
+- If you output different values, the script will be rejected.
+
+[분량 정책 - CRITICAL]
 - 목표 장면 수: ${plan.scenes}개
-- 장면당 대사 수: ${plan.linesPerSceneMin}~${
-      plan.linesPerSceneMax
-    }줄 (DurationMin=${durationMin})
-- 장면 3개 기본. (DurationMin<=5여도 장면 수 유지)
+- 전체 대사량 = DurationMin(${durationMin}분) x 6줄/분 = 약 ${durationMin * 6}줄의 대사 필요
+- 장면당 대사 수: ${plan.linesPerSceneMin}~${plan.linesPerSceneMax}줄 (DurationMin=${durationMin})
+- [중요] 20분 대본이면 최소 ${plan.scenes}개 장면 x 20줄 이상의 대사 필요. 짧은 4개 장면은 부족함!
+- DurationMin이 15분 이상이면: 장면당 25~35줄, 총 대사 ${durationMin * 5}~${durationMin * 7}줄 목표
 - 만약 주제가 "서희" 또는 "외교담판"을 포함하면, 기본 3장면 제목은 반드시: "조정회의" / "거란 진영" / "최종 담판"
 
 [장면 구성 템플릿(기본 3장면)]
