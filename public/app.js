@@ -349,7 +349,14 @@ function renderScriptPreview(script, exportOptions) {
   const metaGrade = script?.header?.grade ?? script.grade ?? "-";
   const metaDur = script?.header?.duration_min ?? script.durationMin ?? "-";
   const metaGroup = script?.header?.group_size ?? script.groupSize ?? "-";
-  const metaSubj = script?.header?.subject ?? script.subject ?? "";
+  
+  // [Fix] Trust URL/slug over LLM response for Subject Name
+  let metaSubj = script?.header?.subject ?? script.subject ?? "";
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  if (pathParts[0] === "subjects" && pathParts[1] === "english") {
+    metaSubj = "영어"; 
+  }
+
   meta.textContent = `${
     metaSubj ? `과목: ${metaSubj} | ` : ""
   }학년: ${metaGrade}학년 | 수업시간: ${metaDur}분 | 모둠 인원: ${metaGroup}명`;
@@ -698,9 +705,17 @@ $("btnGenerate").onclick = async () => {
   exportBtn.disabled = true;
   exportBtn.textContent = "먼저 대본을 생성하세요";
 
+  // Determine subject from URL (Single Source of Truth)
+  // path: /subjects/english/ -> subject="english"
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  let subject = $("subject")?.value || "국어"; // default fallback
+  if (pathParts[0] === "subjects" && pathParts[1]) {
+    subject = pathParts[1].toLowerCase(); // e.g. "english"
+  }
+
   try {
     const body = {
-      subject: $("subject")?.value || "국어",
+      subject: subject,
       topic: topicText,
       // Fast mode (default): prioritize returning a usable result within 30s.
       // Server may auto-adjust heavy parameters and will include `adjusted` in response when changed.
@@ -721,6 +736,8 @@ $("btnGenerate").onclick = async () => {
     console.log(
       `[generate:${requestId}] topic:`,
       body.topic,
+      "subject:",
+      body.subject, 
       `[generate:${requestId}] payload:`,
       body
     );
