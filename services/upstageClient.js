@@ -270,9 +270,8 @@ function stripCodeFences(input) {
  * @param {string} rawText
  */
 function safeParseModelJson(rawText) {
-  const raw = String(rawText || "")
-    .replace(/^\uFEFF/, "")
-    .trim();
+  // [Fix] Remove markdown fences first
+  const raw = stripCodeFences(String(rawText || ""));
   try {
     return JSON.parse(raw);
   } catch {

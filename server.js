@@ -520,7 +520,7 @@ function validateGenerateInput(body) {
   const charactersCountRaw = b.charactersCount ?? b.characters_count;
   const fastMode = b.fastMode;
 
-  const allowedSubjects = ["국어", "사회", "도덕", "역사"];
+  const allowedSubjects = ["국어", "사회", "도덕", "역사", "영어", "english"];
   let subject =
     typeof subjectRaw === "string" && subjectRaw.trim()
       ? subjectRaw.trim()
@@ -996,6 +996,18 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
         code: "UPSTREAM_ERROR",
         message: "Upstage returned error",
         extra: { status: e?.status },
+      });
+    }
+
+    // [Fix] 502 Bad Gateway for Invalid JSON (instead of safeParse crash)
+    if (e?.code === "INVALID_JSON_FROM_MODEL") {
+      return apiError(res, 502, {
+        requestId: reqId,
+        where: "model_output",
+        code: "MODEL_BAD_JSON",
+        message: "Model response was not valid JSON",
+        // Safer to truncate preview to avoid gigantic logs or response bloat
+        rawPreview: (e.sample || "").slice(0, 400),
       });
     }
     if (
