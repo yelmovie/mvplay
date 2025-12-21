@@ -744,7 +744,23 @@ $("btnGenerate").onclick = async () => {
 
     // Network failures (ERR_CONNECTION_RESET 등)도 사용자에게 보여주고 무한대기 방지
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 30_000); // 30초 타임아웃(무한대기 방지)
+    // Default 60s (or env override)
+    // Note: process.env.NEXT_PUBLIC_GENERATE_TIMEOUT_MS might be inlined by build tools, 
+    // but here we are in a raw JS file that might not have process.env replacement if not built. 
+    // Assuming the user runs this with Node/Next which usually polyfills or replaces, 
+    // OR we just set a safe default of 60000.
+    // Since this is public/app.js served statically in this specific setup (based on file structure),
+    // process.env might NOT be available at runtime in the browser unless replaced during build.
+    // I will check if there is a way to pass this config, but for now I will hardcode the default change to 60000 
+    // and attempt to read a global config if available.
+    // Safest bet for this "vanilla" app.js structure: 
+    const timeoutMs = (window.ENV && window.ENV.GENERATE_TIMEOUT_MS) || 60000;
+    
+    let isTimeout = false;
+    const t = setTimeout(() => {
+        isTimeout = true;
+        ctrl.abort();
+    }, timeoutMs);
 
     let resp;
     try {
@@ -757,6 +773,18 @@ $("btnGenerate").onclick = async () => {
         body: JSON.stringify(body),
         signal: ctrl.signal,
       });
+    } catch (e) {
+        if (e.name === 'AbortError') {
+            if (isTimeout) {
+                // Timeout
+                $("genMsg").textContent = "생성이 오래 걸려 중단됐어요. (서버/모델 응답 지연 - 60초 초과)";
+            } else {
+                // User cancelled (if we had a cancel button)
+                $("genMsg").textContent = "사용자가 생성을 취소했습니다.";
+            }
+            return;
+        }
+        throw e;
     } finally {
       clearTimeout(t);
     }
@@ -787,9 +815,9 @@ $("btnGenerate").onclick = async () => {
         $("genMsg").textContent = `입력값을 확인해주세요: ${mapValidationField(
           errField
         )}`;
-      } else if (errCode === "UPSTREAM_TIMEOUT") {
+      } else if (errCode === "UPSTREAM_TIMEOUT" || resp.status === 504) {
         $("genMsg").textContent =
-          "생성 서버가 응답하지 않습니다(30초 초과). 잠시 후 다시 시도해주세요.";
+          "생성 서버가 응답하지 않습니다(시간 초과). 잠시 후 다시 시도해주세요.";
       } else if (errCode === "REQUEST_TIMEOUT") {
         $("genMsg").textContent =
           "생성이 오래 걸려 중단됐어요. (서버/모델 응답 지연)";

@@ -838,28 +838,29 @@ html[data-theme="dark"] .chipBtn {
 }
 
 .subjectCardIcon {
-  flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  border: 1px solid hsl(var(--focus-ring) / 0.22);
-  background: linear-gradient(
-    135deg,
-    hsl(var(--focus-ring) / 0.14) 0%,
-    hsl(var(--focus-ring) / 0.06) 100%
-  );
-  color: var(--text);
+  flex: 0 0 64px; /* Slightly larger area */
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  /* Neon glow effect */
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1)); 
 }
 
+/* Specific glows based on gradients can be enhanced here if we had classes per subject */
 .subjectCardIcon svg {
-  width: 22px;
-  height: 22px;
+  width: 36px;
+  height: 36px;
+  /* Extra subtle glow around the SVG strokes themselves */
+  filter: drop-shadow(0 0 2px rgba(255,255,255,0.5));
 }
 
 .subjectCardMeta {
-  flex: 1 1 auto;
+  flex: 1;
   min-width: 0;
 }
 

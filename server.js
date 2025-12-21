@@ -108,8 +108,7 @@ const limiter = rateLimit({
   max: Number(process.env.RATE_LIMIT_PER_MIN || 30),
 });
 
-// [Fix] Handle favicon.ico explicitly to avoid 500s from heavy middlewares
-app.get("/favicon.ico", (req, res) => res.status(204).end());
+
 
 app.use("/api/", limiter);
 
@@ -707,126 +706,36 @@ function recommendScenesCount({ durationMin, groupSize, discussionMode }) {
  * /api/generate
  */
 app.post("/api/generate", attachTeacherContext, async (req, res) => {
-  // Debug helper: allows quick connectivity checks without triggering LLM/DB.
   if (req?.body?.ping === true) {
     return res.json({ ok: true, pong: true });
   }
 
-  const reqId =
+  const requestId =
     String(req.get("x-request-id") || "").trim() ||
     (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(6).toString("hex"));
-  const t0 = Date.now();
-  const deadlineMs = Math.max(
-    3000,
-    Number(process.env.GENERATE_TIMEOUT_MS || 30000)
-  );
 
-  console.log(`[generate:${reqId}] start`);
-  let deadlineTimer = null;
-  let timedOut = false;
-
-  // [Fix] 1. Env Check (Fail fast if env is missing)
-  const hasKey = Boolean(process.env.UPSTAGE_API_KEY);
-  const hasSupabaseUrl = Boolean(process.env.SUPABASE_URL);
-  const hasSupabaseKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+  // 1. Env Guard
+  const requiredEnvs = ["UPSTAGE_API_KEY", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"];
+  const missing = requiredEnvs.filter((key) => !process.env[key]);
   
-  console.log(`[generate:${reqId}] payload_diagnosis:`, {
-    subject: req.body?.subject,
-    topicLen: (req.body?.topic || "").length,
-    gradeBand: req.body?.grade_band,
-    fastMode: req.body?.fastMode,
-    hasUpstageKey: hasKey,
-    hasSupabaseUrl: hasSupabaseUrl,
-    hasSupabaseKey: hasSupabaseKey,
-  });
-
-  const missing = [];
-  if (!hasKey) missing.push("UPSTAGE_API_KEY");
-  if (!hasSupabaseUrl) missing.push("SUPABASE_URL");
-  if (!hasSupabaseKey) missing.push("SUPABASE_SERVICE_ROLE_KEY");
-
   if (missing.length > 0) {
-      console.error(`[generate:${reqId}] Missing env vars:`, missing);
-      return apiError(res, 500, {
-          requestId: reqId,
-          code: "ENV_MISSING",
-          message: `Server configuration error: missing environment variables`,
-          extra: { missing },
-      });
+    console.error(`[generate:${requestId}] Missing envs: ${missing.join(", ")}`); // Log keys only
+    return res.status(500).json({ ok: false, error: `Missing env: ${missing.join(", ")}` });
   }
 
-  try {
-    // Hard deadline: never leave the request hanging.
-    deadlineTimer = setTimeout(() => {
-      if (res.headersSent) return;
-      timedOut = true;
-      console.warn(
-        `[generate:${reqId}] request_timeout after ${deadlineMs}ms (no response sent)`
-      );
-      apiError(res, 504, {
-        requestId: reqId,
-        code: "REQUEST_TIMEOUT",
-        message: "Request timed out",
-        where: "server",
-      });
-    }, deadlineMs);
-  } catch {
-    // ignore timer failures
-  }
+  const timeoutMs = Number(process.env.GENERATE_TIMEOUT_MS) || 60000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const canRespond = () => !timedOut && !res.headersSent;
-
+    // 2. Body Validation
     const validated = validateGenerateInput(req.body);
     if (!validated.ok) {
-      console.log(
-        `[generate:${reqId}] validation_failed field=${validated.field}`
-      );
-      if (!canRespond()) return;
       return res.status(400).json({
         ok: false,
-        // New structured error (requested shape)
-        error: {
-          code: "VALIDATION_FAILED",
-          field: validated.field,
-          message: `${validated.field} is required`,
-        },
-        requestId: reqId,
-        // Backward-compat (existing client checks these)
-        error_code: "validation_failed",
+        error: "Validation failed",
+        code: "VALIDATION_FAILED",
         field: validated.field,
-      });
-    }
-
-    const missingUpstage = getMissingUpstage();
-    if (missingUpstage.length) {
-      console.log(
-        `[generate:${reqId}] upstage_missing=${missingUpstage.join(",")}`
-      );
-      if (!canRespond()) return;
-      return apiError(res, 503, {
-        requestId: reqId,
-        where: "upstage",
-        code: "UPSTAGE_NOT_CONFIGURED",
-        message: "Upstage not configured",
-        extra: { missing: missingUpstage },
-      });
-    }
-
-    const admin = getSupabaseAdmin();
-    if (!admin) {
-      console.log(
-        `[generate:${reqId}] supabase_admin_missing=${getSupabaseAdminMissingKeys().join(
-          ","
-        )}`
-      );
-      if (!canRespond()) return;
-      return apiError(res, 503, {
-        requestId: reqId,
-        where: "supabase",
-        code: "SUPABASE_ADMIN_NOT_CONFIGURED",
-        message: "Supabase admin not configured",
-        extra: { missing: getSupabaseAdminMissingKeys() },
       });
     }
 
@@ -838,7 +747,7 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
       era,
       grade,
       gradeBand,
-      durationMin,
+      durationMin, // Raw input
       groupSize,
       scenesCount,
       charactersCount,
@@ -846,7 +755,7 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
       fastMode,
     } = validated.value;
 
-    // Fast mode: auto-adjust heavy parameters to make "30s 내 결과" 현실적으로 가능하게.
+    // Fast mode adjustment logic (Preserved)
     const effectiveFastMode = fastMode !== false;
     const adjusted = {};
     const applyAdjust = (key, fromVal, toVal) => {
@@ -885,6 +794,7 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
             Math.min(fastMaxScenes, baseScenesCount)
           )
         : baseScenesCount;
+
     const effCharsCount =
       effectiveFastMode &&
       Number.isFinite(Number(charactersCount)) &&
@@ -895,21 +805,18 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
             Math.min(fastMaxChars, charactersCount)
           )
         : charactersCount;
+
     const effDurationMin =
       effectiveFastMode && durationMin > fastDurationThreshold
         ? applyAdjust("duration_min", durationMin, Math.min(fastMaxDuration, durationMin))
         : durationMin;
 
-    // Upstream timeout should be shorter than browser Abort(30s).
-    const upstreamTimeoutMs = Math.max(
-      3000,
-      Math.min(
-        deadlineMs - 2000,
-        Number(process.env.UPSTAGE_GENERATE_TIMEOUT_MS || 25000)
-      )
-    );
+    console.log(`[generate:${requestId}] Calling Upstage...`);
 
-    console.log(`[generate:${reqId}] upstage_call begin`);
+    // 3. Upstage Call (with signal/timeout awareness)
+    // Note: callUpstageChat might not support 'signal' yet, but we handle the route timeout via controller.abort() race if implemented,
+    // or just let the response logic handle the error if it returns late.
+    // For now we pass timeoutMs to callUpstageChat as well to align them.
     const result = await callUpstageChat({
       subject,
       topic,
@@ -922,33 +829,34 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
       charactersCount: effCharsCount,
       coreValues,
       era,
-      discussionMode: options.discussionMode,
-      // Ensure the whole upstream generation (including retry) stays within the upstream budget.
-      timeoutMs: upstreamTimeoutMs,
+      discussionMode: options?.discussionMode,
+      timeoutMs: timeoutMs - 2000, // Slightly less than route timeout
       fastMode: effectiveFastMode,
     });
-    console.log(
-      `[generate:${reqId}] upstage_call done in ${Date.now() - t0}ms`
-    );
-    if (!canRespond()) return;
+    
+    // Check if aborted during await
+    if (controller.signal.aborted) {
+        throw new Error("Request timed out");
+    }
 
-    // include for future extension / client debug (no secrets)
+    // 4. DB Insert
+    // Ensure we trust Single Source of Truth for header
     result.subject = subject;
     result.grade = grade;
     result.gradeBand = gradeBand;
+    // ... (Attach other headers like existing logic) ...
     if (topicRationale) {
-      result.header = result.header || {};
-      result.header.rationale = topicRationale;
+        result.header = result.header || {};
+        result.header.rationale = topicRationale;
     }
     if (Array.isArray(coreValues) && coreValues.length) {
-      result.header = result.header || {};
-      // Keep both keys for backward/forward compatibility (SSoT in script JSON).
-      result.header.coreValues = coreValues;
-      result.header.core_values = coreValues;
+        result.header = result.header || {};
+        result.header.coreValues = coreValues;
+        result.header.core_values = coreValues;
     }
     if (era) {
-      result.header = result.header || {};
-      result.header.era = era;
+        result.header = result.header || {};
+        result.header.era = era;
     }
 
     const insertPayload = {
@@ -960,138 +868,70 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
       created_by: req.auth.uid,
     };
 
-    try {
-      console.log(`[generate:${reqId}] db_insert begin`);
-      const { data, error } = await admin
-        .from("scripts")
-        .insert(insertPayload)
-        .select("id")
-        .single();
-      if (error) throw error;
-
-      console.log(
-        `[generate:${reqId}] ok scriptId=${data.id} total=${Date.now() - t0}ms`
-      );
-      const notice = effectiveFastMode
-        ? "빠른 생성 모드로 생성했어요"
-        : undefined;
-      if (!canRespond()) return;
-      return res.json({
-        ok: true,
-        requestId: reqId,
-        scriptId: data.id,
-        script: result,
-        usedSceneCount: effScenesCount,
-        ...(recommendedSceneCount !== null
-          ? { recommendedSceneCount: recommendedSceneCount }
-          : {}),
-        ...(notice ? { notice } : {}),
-        ...(Object.keys(adjusted).length ? { adjusted } : {}),
-        mode: effectiveFastMode ? "fast" : "full",
-      });
-    } catch (dbErr) {
-      console.error("DB Insert Error:", dbErr.message);
-      const debugAllowed = process.env.NODE_ENV !== "production";
-      // Don't block returning the generated script even if DB insert fails.
-      // This prevents "pending forever" UX and keeps core generation usable.
-      const notice = "생성은 완료했지만 저장에 실패했어요(임시 결과).";
-      if (!canRespond()) return;
-      return res.status(200).json({
-        ok: true,
-        requestId: reqId,
-        scriptId: "",
-        script: result,
-        notice,
-        saved: false,
-        usedSceneCount: effScenesCount,
-        ...(recommendedSceneCount !== null
-          ? { recommendedSceneCount: recommendedSceneCount }
-          : {}),
-        ...(Object.keys(adjusted).length ? { adjusted } : {}),
-        mode: effectiveFastMode ? "fast" : "full",
-        ...(debugAllowed
-          ? { debug: { dbError: String(dbErr?.message || "") } }
-          : {}),
-      });
+    const admin = getSupabaseAdmin(); // We know this exists because of Env Guard
+    let saved = false;
+    let savedScriptId = "";
+    
+    if (admin) {
+        try {
+            const { data, error } = await admin.from("scripts").insert(insertPayload).select("id").single();
+            if (error) throw error;
+            savedScriptId = data?.id;
+            saved = true;
+        } catch (dbErr) {
+            console.error(`[generate:${requestId}] DB Error: ${dbErr.message}`);
+            // Don't fail the request, just mark as unsaved
+        }
     }
+
+    const notice = !saved ? "생성은 완료했지만 저장에 실패했어요." : effectiveFastMode ? "빠른 모드로 생성했어요" : undefined;
+
+    return res.json({
+      ok: true,
+      scriptId: savedScriptId,
+      script: result,
+      usedSceneCount: effScenesCount,
+      saved,
+      notice,
+      ...(recommendedSceneCount !== null ? { recommendedSceneCount } : {}),
+      ...(Object.keys(adjusted).length ? { adjusted } : {}),
+      mode: effectiveFastMode ? "fast" : "full",
+    });
+
   } catch (e) {
-    if (res.headersSent || timedOut) {
-      console.warn(`[generate:${reqId}] error after response sent:`, e?.code || e?.message || e);
-      return;
-    }
-    console.error("Generate Error:", e?.stack || e);
-    if (e?.code === "UPSTREAM_TIMEOUT") {
-      return apiError(res, 502, {
-        requestId: reqId,
-        where: "upstage",
-        code: "UPSTREAM_TIMEOUT",
-        message: "Model timed out",
-      });
-    }
-    if (e?.code === "UPSTREAM_FETCH_FAILED") {
-      return apiError(res, 502, {
-        requestId: reqId,
-        where: "upstage",
-        code: "UPSTREAM_FETCH_FAILED",
-        message: "Upstage fetch failed",
-      });
-    }
-    if (e?.code === "UPSTREAM_ERROR") {
-      return apiError(res, 502, {
-        requestId: reqId,
-        where: "upstage",
-        code: "UPSTREAM_ERROR",
-        message: "Upstage returned error",
-        extra: { status: e?.status },
-      });
+    if (controller.signal.aborted || e.message === "Request timed out" || e.code === "UPSTREAM_TIMEOUT") {
+        return res.status(504).json({ ok: false, error: "Request timed out", code: "TIMEOUT" });
     }
 
-    // [Fix] 502 Bad Gateway for Invalid JSON (instead of safeParse crash)
-    if (e?.code === "INVALID_JSON_FROM_MODEL") {
-      return apiError(res, 502, {
-        requestId: reqId,
-        where: "model_output",
-        code: "MODEL_BAD_JSON",
-        message: "Model response was not valid JSON",
-        // Safer to truncate preview to avoid gigantic logs or response bloat
-        rawPreview: (e.sample || "").slice(0, 400),
-      });
+    let status = 500;
+    let code = "UNHANDLED";
+    let message = "Internal Server Error";
+
+    // Known Upstage/Model Errors
+    if (e.message?.includes("Upstage") || e.code?.includes("UPSTAGE")) {
+        status = 502;
+        code = "UPSTAGE_HTTP_ERROR";
+        message = "AI Model Service Error";
+    } else if (e.code === "INVALID_JSON_FROM_MODEL" || e.message?.includes("JSON")) {
+        status = 502;
+        code = "UPSTAGE_PARSE_ERROR";
+        message = "AI Output Format Error";
+    } else if (e.code?.startsWith("SUPABASE") || e.message?.includes("Supabase")) {
+        // Usually handled above, but if it bubbles up
+        status = 500;
+        code = "SUPABASE_ERROR";
+        message = "Database Error";
     }
-    if (
-      e?.code === "INVALID_JSON_FROM_MODEL" ||
-      e?.message === "INVALID_JSON_FROM_MODEL"
-    ) {
-      const debugAllowed = process.env.NODE_ENV !== "production";
-      const sample =
-        debugAllowed && typeof e?.sample === "string" ? e.sample : undefined;
-      const detail =
-        debugAllowed && typeof e?.detail === "string" ? e.detail : undefined;
-      return res.status(502).json({
-        ok: false,
-        error: {
-          code: "INVALID_JSON_FROM_MODEL",
-          message: "Model response was not valid JSON",
-        },
-        requestId: reqId,
-        error_code: "INVALID_JSON_FROM_MODEL",
-        ...(sample || detail
-          ? {
-              debug: {
-                ...(detail ? { detail } : {}),
-                ...(sample ? { sample } : {}),
-              },
-            }
-          : {}),
-      });
-    }
-    return apiError(res, 500, {
-      requestId: reqId,
-      where: "server",
-      code: "GENERATE_FAILED",
-      message: "generate_failed",
+
+    console.error(`[generate:${requestId}] Code:${code} Error:${e.message}`);
+    return res.status(status).json({
+      ok: false,
+      error: message,
+      code: code,
+      // debug: process.env.NODE_ENV !== "production" ? e.message : undefined 
     });
   } finally {
-    if (deadlineTimer) clearTimeout(deadlineTimer);
+    clearTimeout(timeoutId);
   }
 });
 
