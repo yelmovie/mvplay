@@ -212,6 +212,33 @@ app.all("/api/voice", (req, res) => {
 });
 
 /**
+ * /api/env-check (Diagnostic endpoint)
+ * Returns boolean status of required environment variables (NO SECRET VALUES)
+ */
+app.get("/api/env-check", (req, res) => {
+  const check = (key) => {
+    const val = process.env[key];
+    if (!val) return false;
+    const s = String(val).trim();
+    // Treat placeholder values as missing
+    if (s.startsWith("__put_") || s.includes("__put_your_")) return false;
+    return true;
+  };
+
+  return res.json({
+    ok: true,
+    env: {
+      UPSTAGE_API_KEY: check("UPSTAGE_API_KEY"),
+      UPSTAGE_BASE_URL: check("UPSTAGE_BASE_URL"),
+      SUPABASE_URL: check("SUPABASE_URL"),
+      SUPABASE_SERVICE_ROLE_KEY: check("SUPABASE_SERVICE_ROLE_KEY"),
+      SUPABASE_ANON_KEY: check("SUPABASE_ANON_KEY"),
+    },
+    note: "This endpoint only shows if env vars exist (true/false), never the actual values.",
+  });
+});
+
+/**
  * Server-side "teacher" identity
  *
  * DB schema requires `scripts.created_by` to reference `auth.users(id)` (uuid, NOT NULL).
@@ -700,21 +727,31 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
 
   // [Fix] 1. Env Check (Fail fast if env is missing)
   const hasKey = Boolean(process.env.UPSTAGE_API_KEY);
+  const hasSupabaseUrl = Boolean(process.env.SUPABASE_URL);
+  const hasSupabaseKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+  
   console.log(`[generate:${reqId}] payload_diagnosis:`, {
     subject: req.body?.subject,
     topicLen: (req.body?.topic || "").length,
     gradeBand: req.body?.grade_band,
     fastMode: req.body?.fastMode,
     hasUpstageKey: hasKey,
-    hasSupabaseKey: Boolean(process.env.SUPABASE_URL),
+    hasSupabaseUrl: hasSupabaseUrl,
+    hasSupabaseKey: hasSupabaseKey,
   });
 
-  if (!hasKey) {
-      console.error(`[generate:${reqId}] Missing UPSTAGE_API_KEY`);
+  const missing = [];
+  if (!hasKey) missing.push("UPSTAGE_API_KEY");
+  if (!hasSupabaseUrl) missing.push("SUPABASE_URL");
+  if (!hasSupabaseKey) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+
+  if (missing.length > 0) {
+      console.error(`[generate:${reqId}] Missing env vars:`, missing);
       return apiError(res, 500, {
           requestId: reqId,
           code: "ENV_MISSING",
-          message: "Server misconfiguration (key missing)",
+          message: `Server configuration error: missing environment variables`,
+          extra: { missing },
       });
   }
 
