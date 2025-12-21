@@ -699,7 +699,17 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
   let timedOut = false;
 
   // [Fix] 1. Env Check (Fail fast if env is missing)
-  if (!process.env.UPSTAGE_API_KEY) {
+  const hasKey = Boolean(process.env.UPSTAGE_API_KEY);
+  console.log(`[generate:${reqId}] payload_diagnosis:`, {
+    subject: req.body?.subject,
+    topicLen: (req.body?.topic || "").length,
+    gradeBand: req.body?.grade_band,
+    fastMode: req.body?.fastMode,
+    hasUpstageKey: hasKey,
+    hasSupabaseKey: Boolean(process.env.SUPABASE_URL),
+  });
+
+  if (!hasKey) {
       console.error(`[generate:${reqId}] Missing UPSTAGE_API_KEY`);
       return apiError(res, 500, {
           requestId: reqId,
