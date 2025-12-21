@@ -5,7 +5,7 @@ import {
 
 const $ = (id) => document.getElementById(id);
 
-const SUBJECTS = /** @type {const} */ (["국어", "사회", "도덕", "역사"]);
+const SUBJECTS = /** @type {const} */ (["국어", "사회", "도덕", "역사", "영어"]);
 
 function getPreferredTheme() {
   try {
@@ -126,6 +126,7 @@ const TOPIC_PLACEHOLDERS = {
   사회: "직접 입력 가능 · 예) 우리 지역 문제 해결 회의 / 공정한 규칙 만들기 / 환경 실천 토론",
   도덕: "직접 입력 가능 · 예) 진심으로 사과하기 / 단톡방 예절 갈등 / 공정한 선택과 책임",
   역사: "직접 입력 가능 · 예) 역사 인물 인터뷰 / 갈등 해결 상황 / 시대별 선택의 순간",
+  영어: "Direct input available · e.g., Introducing yourself / Ordering food / Asking for directions",
 };
 
 function updateTopicPlaceholder(subject) {

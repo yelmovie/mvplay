@@ -94,6 +94,28 @@ export const TOPIC_SAMPLES_BY_SUBJECT = {
     "역사 역할극: 약속과 신뢰를 지키는 선택",
     "역사 역할극: 위기 속에서 협력하는 선택",
   ],
+  영어: [
+    "Meet a new friend and introduce yourself (Hi, I’m…, Nice to meet you.)",
+    "Ask for classroom help (Can you help me? / I don’t understand.)",
+    "Ask about homework and supplies (What’s the homework? / Do we need…?)",
+    "Make a plan and set a time (Let’s… / What time? / See you at…)",
+    "Talk about today’s date and day (It’s Monday. / Today is…)",
+    "Talk about the weather and clothes (It’s rainy. / You should wear…)",
+    "Ask for help when you feel sick (I feel sick. / Can I go to the nurse?)",
+    "Talk about likes and hobbies (I like… / My hobby is…)",
+    "Suggest a weekend activity (How about…? / Let’s go…)",
+    "Give directions at school (Go straight. / Turn left. / It’s next to…)",
+    "Buy something at a store (How much is it? / I’d like…)",
+    "Order food politely (Can I have…? / Anything else?)",
+    "Choose a lunch menu and explain (I want… because…)",
+    "Invite and respond (Would you like to…? / Sure / Sorry, I can’t.)",
+    "Apologize and fix the problem (I’m sorry. / It was my fault. / Let’s fix it.)",
+    "Ask a favor and refuse politely (Could you…? / I can’t because…)",
+    "Compliment and say thanks (Great job! / Thank you for…)",
+    "Make class rules together (We should… / We mustn’t… / Let’s agree.)",
+    "Describe a person/animal/object (He has… / It’s big/small…)",
+    "Mini interview about school life (What’s your favorite…? / Tell me about…)",
+  ],
 };
 
 export const DEFAULT_TOPIC_SAMPLES = TOPIC_SAMPLES_BY_SUBJECT.국어;

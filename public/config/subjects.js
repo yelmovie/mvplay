@@ -54,6 +54,20 @@ export const SUBJECTS = [
       </svg>
     `.trim(),
   },
+  {
+    slug: "english",
+    name: "영어",
+    oneLiner: "실생활 의사소통을 역할극으로 연습해요.",
+    description:
+      "영어 회화, 상황별 표현 연습, 일상 대화 등 영어 수업에 활용할 수 있는 역할극 자료를 제공합니다.",
+    iconSvg: `
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M2.5 9h19M2.5 15h19M9 2.5v19M15 2.5v19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+        <path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    `.trim(),
+  },
 ];
 
 export function findSubjectBySlug(slug) {
