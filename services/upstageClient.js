@@ -545,6 +545,11 @@ export async function callUpstageChat({
     `당신은 초등학생용 교육용 역할극 대본 생성기입니다.
 반드시 아래 JSON 스키마를 만족하는 "짧은 대본"을 생성하세요.
 
+[CRITICAL]
+- You MUST output ONLY valid JSON.
+- No markdown, no introductory text, no "Here is the result".
+- If you cannot comply, output {"error":"FORMAT_ERROR"} only.
+
 [속도 우선]
 - 출력은 짧게: 장면 ${plan.scenes}개, 장면당 대사(lines) 6~8줄 이내.
 - 무대지시(stage_directions)는 장면당 1줄.
@@ -561,6 +566,11 @@ ${fastSchema}
 학교 수업에서 즉시 활용 가능한 수준 높은 대본을 생성하세요.
 기본 출력은 반드시 "워크시트형(풍부)"이며, 섹션을 생략/요약하지 마세요.
 반드시 아래 JSON 스키마를 엄격히 준수하여 응답하세요. (누락 시 실패)
+
+[CRITICAL]
+- You MUST output ONLY valid JSON.
+- No markdown, no introductory text, no "Here is the result".
+- If you cannot comply, output {"error":"FORMAT_ERROR"} only.
 
 [사용자 확정 톤(기본값 고정)]
 - humorLevel=${DEFAULT_STYLE_META.humorLevel} (교실에서 웃음 터짐)
@@ -715,6 +725,7 @@ DiscussionMode: ${discussionMode ? "ON" : "OFF"}
 Output Style: Worksheet-rich (sections must be included). A4 2~4 pages is fine. Readability first.
 
 Output: Return ONLY a single JSON object. No markdown, no code fences, no extra text.
+If you output anything other than JSON, the system will crash.
 `.trim();
 
   const totalBudgetMs = Math.max(

@@ -107,6 +107,10 @@ const limiter = rateLimit({
   windowMs: 60 * 1000,
   max: Number(process.env.RATE_LIMIT_PER_MIN || 30),
 });
+
+// [Fix] Handle favicon.ico explicitly to avoid 500s from heavy middlewares
+app.get("/favicon.ico", (req, res) => res.status(204).end());
+
 app.use("/api/", limiter);
 
 function getCookie(req, name) {
@@ -693,6 +697,17 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
   console.log(`[generate:${reqId}] start`);
   let deadlineTimer = null;
   let timedOut = false;
+
+  // [Fix] 1. Env Check (Fail fast if env is missing)
+  if (!process.env.UPSTAGE_API_KEY) {
+      console.error(`[generate:${reqId}] Missing UPSTAGE_API_KEY`);
+      return apiError(res, 500, {
+          requestId: reqId,
+          code: "ENV_MISSING",
+          message: "Server misconfiguration (key missing)",
+      });
+  }
+
   try {
     // Hard deadline: never leave the request hanging.
     deadlineTimer = setTimeout(() => {
