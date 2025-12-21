@@ -518,6 +518,15 @@ export async function callUpstageChat({
 - 애매한 사실은 "기록에 따르면/전해진다"로 처리(과용 금지).`
     : "";
 
+  // [English Subject] Enforce English Output
+  const englishModeBlock =
+    subject === "영어" || subject === "english"
+      ? `\n[CRITICAL: ENGLISH OUTPUT REQUIRED]
+- Write the entire script / response in ENGLISH ONLY.
+- Key terms, Scene titles, Lines, Explanations, Teacher tips, Feedback questions MUST BE English.
+- Do NOT include any Korean characters.`
+      : "";
+
   const fastSchema = `{
   "header": { "title": "제목", "subject": "과목", "grade": 4, "duration_min": 5, "group_size": 5 },
   "situation_roles": "상황 및 역할(해설) - 3~5문장",
@@ -584,6 +593,7 @@ ${fastSchema}
 - 허용 유머: 상황 유머(오해/타이밍/긴장완화), 말투 유머(되묻기/짧은 말장난/리듬감), 관찰 유머(심리 한 줄)
 - 금지: 조롱/외모/차별/폭력 유머, 밈/유행어 남발, 캐릭터 붕괴, 뜬금 초현실 설정(마법/외계인 등)
 ${historyHumorBlock}
+${englishModeBlock}
 
 [톤 목표]
 - 아이들이 웃고 몰입하는 재치·유머가 있으면서도, 역사/사회/도덕의 핵심 통찰이 자연스럽게 남아야 합니다.

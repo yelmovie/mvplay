@@ -240,12 +240,16 @@ function renderTopicSamples() {
   const list = Array.isArray(base) ? base.filter(Boolean).slice(0, 20) : [];
 
   for (const sample of list) {
+    const isObj = typeof sample === "object" && sample !== null;
+    const label = isObj ? sample.display : sample;
+    const val = isObj ? sample.topic : sample;
+
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "chipBtn";
-    btn.textContent = sample;
-    btn.setAttribute("aria-label", `주제 샘플: ${sample}`);
-    btn.addEventListener("click", () => setTopicFromSample(sample));
+    btn.textContent = label;
+    btn.setAttribute("aria-label", `주제 샘플: ${label}`);
+    btn.addEventListener("click", () => setTopicFromSample(val));
     container.appendChild(btn);
   }
 }

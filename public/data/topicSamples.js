@@ -95,26 +95,90 @@ export const TOPIC_SAMPLES_BY_SUBJECT = {
     "역사 역할극: 위기 속에서 협력하는 선택",
   ],
   영어: [
-    "Meet a new friend and introduce yourself (Hi, I’m…, Nice to meet you.)",
-    "Ask for classroom help (Can you help me? / I don’t understand.)",
-    "Ask about homework and supplies (What’s the homework? / Do we need…?)",
-    "Make a plan and set a time (Let’s… / What time? / See you at…)",
-    "Talk about today’s date and day (It’s Monday. / Today is…)",
-    "Talk about the weather and clothes (It’s rainy. / You should wear…)",
-    "Ask for help when you feel sick (I feel sick. / Can I go to the nurse?)",
-    "Talk about likes and hobbies (I like… / My hobby is…)",
-    "Suggest a weekend activity (How about…? / Let’s go…)",
-    "Give directions at school (Go straight. / Turn left. / It’s next to…)",
-    "Buy something at a store (How much is it? / I’d like…)",
-    "Order food politely (Can I have…? / Anything else?)",
-    "Choose a lunch menu and explain (I want… because…)",
-    "Invite and respond (Would you like to…? / Sure / Sorry, I can’t.)",
-    "Apologize and fix the problem (I’m sorry. / It was my fault. / Let’s fix it.)",
-    "Ask a favor and refuse politely (Could you…? / I can’t because…)",
-    "Compliment and say thanks (Great job! / Thank you for…)",
-    "Make class rules together (We should… / We mustn’t… / Let’s agree.)",
-    "Describe a person/animal/object (He has… / It’s big/small…)",
-    "Mini interview about school life (What’s your favorite…? / Tell me about…)",
+    {
+      display: "새 친구에게 인사하고 자기소개하기",
+      topic:
+        "Meet a new friend and introduce yourself (Hi, I’m… / Nice to meet you.)",
+    },
+    {
+      display: "교실에서 도움이 필요할 때 말하기",
+      topic: "Ask for classroom help (Can you help me? / I don’t understand.)",
+    },
+    {
+      display: "준비물·숙제 물어보기",
+      topic: "Ask about homework and supplies (What’s the homework? / Do we need…?)",
+    },
+    {
+      display: "약속 정하고 시간 정하기",
+      topic: "Make a plan and set a time (Let’s… / What time? / See you at…)",
+    },
+    {
+      display: "오늘 날짜·요일 말하기",
+      topic: "Talk about today’s date and day (It’s Monday. / Today is…)",
+    },
+    {
+      display: "날씨 말하고 옷차림 추천하기",
+      topic: "Talk about the weather and clothes (It’s rainy. / You should wear…)",
+    },
+    {
+      display: "아플 때 도움 요청하기",
+      topic:
+        "Ask for help when you feel sick (I feel sick. / Can I go to the nurse?)",
+    },
+    {
+      display: "좋아하는 것·취미 말하기",
+      topic: "Talk about likes and hobbies (I like… / My hobby is…)",
+    },
+    {
+      display: "주말 활동 제안하기",
+      topic: "Suggest a weekend activity (How about…? / Let’s go…)",
+    },
+    {
+      display: "학교에서 길 안내하기",
+      topic:
+        "Give directions at school (Go straight. / Turn left. / It’s next to…)",
+    },
+    {
+      display: "가게에서 물건 사기",
+      topic: "Buy something at a store (How much is it? / I’d like…)",
+    },
+    {
+      display: "식당에서 정중하게 주문하기",
+      topic: "Order food politely (Can I have…? / Anything else?)",
+    },
+    {
+      display: "점심 메뉴 고르고 이유 말하기",
+      topic: "Choose a lunch menu and explain (I want… because…)",
+    },
+    {
+      display: "생일파티 초대하고 대답하기",
+      topic: "Invite and respond (Would you like to…? / Sure. / Sorry, I can’t.)",
+    },
+    {
+      display: "사과하고 문제 해결하기",
+      topic: "Apologize and fix the problem (I’m sorry. / Let’s fix it.)",
+    },
+    {
+      display: "부탁하기·정중히 거절하기",
+      topic: "Ask a favor and refuse politely (Could you…? / I can’t because…)",
+    },
+    {
+      display: "칭찬하고 감사하기",
+      topic: "Compliment and say thanks (Great job! / Thank you for…)",
+    },
+    {
+      display: "우리 반 규칙 함께 정하기",
+      topic: "Make class rules together (We should… / We mustn’t… / Let’s agree.)",
+    },
+    {
+      display: "사람·동물·물건 묘사하기",
+      topic: "Describe a person/animal/object (He has… / It’s big/small…)",
+    },
+    {
+      display: "학교생활 미니 인터뷰하기",
+      topic:
+        "Mini interview about school life (What’s your favorite…? / Tell me about…)",
+    },
   ],
 };
 
