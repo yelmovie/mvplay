@@ -185,6 +185,12 @@ app.use((req, res, next) => {
   return next();
 });
 
+// First entry: redirect "/" to the subject selector screen.
+// (Routing/flow change only — does not touch any generator logic.)
+app.get("/", (req, res) => {
+  return res.redirect(302, "/subjects/");
+});
+
 // 정적 파일 서빙
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -643,6 +649,30 @@ function validateGenerateInput(body) {
 }
 
 /**
+ * Recommend a scene count when the client doesn't provide one.
+ * Keep it simple, stable, and within allowed range (1~8).
+ */
+function recommendScenesCount({ durationMin, groupSize, discussionMode }) {
+  const dur = Number(durationMin) || 5;
+  const gs = Number(groupSize) || 5;
+  const discuss = Boolean(discussionMode);
+
+  // Base by duration (shorter => fewer scenes)
+  let n = dur <= 5 ? 3 : dur <= 8 ? 4 : dur <= 12 ? 5 : 6;
+
+  // Adjust by group size (bigger group can handle a bit more)
+  if (gs >= 9) n += 1;
+  else if (gs <= 4) n -= 1;
+
+  // Discussion/writing option tends to need more structure
+  if (discuss) n += 1;
+
+  // Clamp to safe range (server allows 1~8)
+  n = Math.max(1, Math.min(8, n));
+  return n;
+}
+
+/**
  * /api/generate
  */
 app.post("/api/generate", attachTeacherContext, async (req, res) => {
@@ -769,10 +799,30 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
     const fastDurationThreshold = Number(process.env.FASTMODE_DURATION_THRESHOLD || 10);
     const fastMaxDuration = Number(process.env.FASTMODE_MAX_DURATION || 8);
 
-    const effScenesCount =
-      effectiveFastMode && Number.isFinite(Number(scenesCount)) && scenesCount > fastScenesThreshold
-        ? applyAdjust("scenesCount", scenesCount, Math.min(fastMaxScenes, scenesCount))
+    const recommendedSceneCount =
+      scenesCount === null || scenesCount === undefined
+        ? recommendScenesCount({
+            durationMin,
+            groupSize,
+            discussionMode: options?.discussionMode,
+          })
+        : null;
+
+    const baseScenesCount =
+      scenesCount === null || scenesCount === undefined
+        ? recommendedSceneCount
         : scenesCount;
+
+    const effScenesCount =
+      effectiveFastMode &&
+      Number.isFinite(Number(baseScenesCount)) &&
+      baseScenesCount > fastScenesThreshold
+        ? applyAdjust(
+            "scenesCount",
+            baseScenesCount,
+            Math.min(fastMaxScenes, baseScenesCount)
+          )
+        : baseScenesCount;
     const effCharsCount =
       effectiveFastMode &&
       Number.isFinite(Number(charactersCount)) &&
@@ -869,6 +919,10 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
         requestId: reqId,
         scriptId: data.id,
         script: result,
+        usedSceneCount: effScenesCount,
+        ...(recommendedSceneCount !== null
+          ? { recommendedSceneCount: recommendedSceneCount }
+          : {}),
         ...(notice ? { notice } : {}),
         ...(Object.keys(adjusted).length ? { adjusted } : {}),
         mode: effectiveFastMode ? "fast" : "full",
@@ -887,6 +941,10 @@ app.post("/api/generate", attachTeacherContext, async (req, res) => {
         script: result,
         notice,
         saved: false,
+        usedSceneCount: effScenesCount,
+        ...(recommendedSceneCount !== null
+          ? { recommendedSceneCount: recommendedSceneCount }
+          : {}),
         ...(Object.keys(adjusted).length ? { adjusted } : {}),
         mode: effectiveFastMode ? "fast" : "full",
         ...(debugAllowed

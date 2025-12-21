@@ -74,6 +74,51 @@ function setupGradeSync() {
   });
 }
 
+/**
+ * UI simplification (global):
+ * - Remove "학년(상세)" dropdown (#grade)
+ * - Remove "장면 수(1~8)" input (#scenesCount)
+ * - Add a small note: "장면 수는 자동 추천됩니다."
+ *
+ * NOTE: This is a DOM-only change so the same behavior applies to all pages
+ * that reuse `public/app.js` without editing multiple HTML files.
+ */
+function simplifyBuilderFormUi() {
+  // Remove grade detail dropdown
+  try {
+    const gradeEl = $("grade");
+    if (gradeEl) {
+      const wrap = gradeEl.closest(".grid > div") || gradeEl.closest("div");
+      wrap?.remove?.();
+    }
+  } catch {
+    // ignore
+  }
+
+  // Remove scenesCount input and replace with read-only hint
+  try {
+    const scenesEl = $("scenesCount");
+    if (!scenesEl) return;
+    const wrap = scenesEl.closest(".grid > div") || scenesEl.closest("div");
+    const grid = wrap?.parentElement || null;
+    wrap?.remove?.();
+
+    if (grid) {
+      const info = document.createElement("div");
+      const label = document.createElement("label");
+      label.textContent = "장면 수";
+      const hint = document.createElement("div");
+      hint.className = "fieldHint";
+      hint.textContent = "장면 수는 자동 추천됩니다.";
+      info.appendChild(label);
+      info.appendChild(hint);
+      grid.appendChild(info);
+    }
+  } catch {
+    // ignore
+  }
+}
+
 let isGenerating = false;
 
 const TOPIC_PLACEHOLDERS = {
@@ -656,11 +701,9 @@ $("btnGenerate").onclick = async () => {
       // Server may auto-adjust heavy parameters and will include `adjusted` in response when changed.
       fastMode: true,
       grade_band: $("gradeBand").value,
-      grade: Number($("grade").value),
       group_size: Number($("groupSize").value),
       duration_min: Number($("durationMin").value),
       charactersCount: Number($("charactersCount")?.value),
-      scenesCount: Number($("scenesCount")?.value),
       options: { discussionMode: $("discussionMode").checked },
       exportOptions: {
         twoColumn: Boolean($("checkTwoColumn")?.checked),
@@ -749,7 +792,6 @@ $("btnGenerate").onclick = async () => {
     // Put meta onto the single script object so preview and DOCX share the same source of truth.
     generatedScript.durationMin = body.duration_min;
     generatedScript.groupSize = body.group_size;
-    generatedScript.grade = body.grade;
     generatedScript.subject = body.subject;
     generatedScriptId = normalized.scriptId || json.scriptId || "";
     generatedExportOptions = body.exportOptions;
@@ -766,6 +808,10 @@ $("btnGenerate").onclick = async () => {
     $("genMsg").textContent = json?.notice
       ? `생성 완료 · ${String(json.notice)}`
       : "생성 완료";
+    const usedScenes = Number(json?.usedSceneCount ?? json?.recommendedSceneCount);
+    if (Number.isFinite(usedScenes)) {
+      $("genMsg").textContent += ` · 추천 장면 수: ${usedScenes}`;
+    }
 
     // JSON panel reset
     $("jsonOutput").textContent = lastScriptJsonString;
@@ -910,6 +956,7 @@ $("btnExport").onclick = async () => {
   }
 };
 
+simplifyBuilderFormUi();
 setupGradeSync();
 setupSubject();
 setupTopicRequiredUx();

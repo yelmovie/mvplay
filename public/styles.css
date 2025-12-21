@@ -732,3 +732,329 @@ html[data-theme="dark"] .chipBtn {
 .lineText {
   white-space: pre-wrap;
 }
+
+/* =========================================================
+   Subjects (/subjects/*) - UI only (cool glassmorphism)
+   - New classes only (no existing behavior changes)
+   ========================================================= */
+
+.subjectsHero {
+  max-width: 920px;
+  margin: 26px auto 14px auto;
+  text-align: center;
+}
+
+.subjectsHeroBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.subjectsHeroTitle {
+  margin: 0;
+  /* readable, responsive title */
+  font-size: clamp(1.9rem, 1.6rem + 1.2vw, 2.35rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.subjectsHeroDesc {
+  margin: 10px auto 0 auto;
+  max-width: 56ch;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.65;
+  text-wrap: balance;
+}
+
+.subjectsSection {
+  max-width: 1100px;
+  margin: 18px auto 32px auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.subjectsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 720px) {
+  .subjectsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .subjectsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+}
+
+.subjectCard {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  text-decoration: none;
+  color: var(--text);
+  padding: 18px 18px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow);
+  transition: transform 0.16s ease, border-color 0.16s ease, filter 0.16s ease;
+  min-height: 112px;
+}
+
+.subjectCard:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.02);
+  border-color: hsl(var(--focus-ring) / 0.45);
+}
+
+.subjectCard:active {
+  transform: translateY(0px);
+}
+
+.subjectCard:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.subjectCardIcon {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  border: 1px solid hsl(var(--focus-ring) / 0.22);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--focus-ring) / 0.14) 0%,
+    hsl(var(--focus-ring) / 0.06) 100%
+  );
+  color: var(--text);
+}
+
+.subjectCardIcon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.subjectCardMeta {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.subjectCardTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.subjectCardTitle {
+  font-weight: 850;
+  font-size: 1.18rem;
+  letter-spacing: -0.01em;
+}
+
+.subjectCardArrow {
+  width: 22px;
+  height: 22px;
+  opacity: 0.7;
+  transform: translateX(-2px);
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.subjectCardArrow svg {
+  width: 22px;
+  height: 22px;
+}
+
+.subjectCard:hover .subjectCardArrow {
+  opacity: 0.95;
+  transform: translateX(0px);
+}
+
+.subjectCardDesc {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+/* Subject detail page */
+.subjectHero {
+  max-width: 920px;
+  margin: 26px auto 14px auto;
+  text-align: left;
+}
+
+.subjectHeroKicker {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.subjectHeroTitle {
+  margin: 0;
+  font-size: clamp(1.7rem, 1.55rem + 0.9vw, 2.15rem);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.subjectHeroDesc {
+  margin: 10px 0 0 0;
+  max-width: 70ch;
+  color: var(--muted);
+  font-size: 1.06rem;
+  line-height: 1.65;
+  text-wrap: balance;
+}
+
+.subjectSection {
+  max-width: 920px;
+  margin: 18px auto 32px auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.resourcesList {
+  display: grid;
+  gap: 12px;
+}
+
+.resourceCard {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow);
+  padding: 16px 16px;
+  transition: transform 0.16s ease, border-color 0.16s ease, filter 0.16s ease;
+}
+
+.resourceCard:hover {
+  filter: brightness(1.02);
+  border-color: hsl(var(--focus-ring) / 0.35);
+  transform: translateY(-1px);
+}
+
+.resourceCard:focus-within {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.resourceTitle {
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.resourceNote {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.resourceActions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.resourceEmpty {
+  color: var(--muted);
+  padding: 14px 2px;
+}
+
+/* Cool-toned primary button for subjects (avoid cream/yellow) */
+.msBtnCoolPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-weight: 800;
+  color: var(--ms-text-light);
+  border-radius: var(--radius-lg);
+  padding: 0.7rem 1.05rem;
+  border: 1px solid hsl(var(--focus-ring) / 0.35);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--btn-grad-from) / 0.92) 0%,
+    hsl(var(--btn-grad-to) / 0.92) 100%
+  );
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(var(--glass-blur));
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+  min-height: 44px;
+}
+
+.msBtnCoolPrimary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.msBtnCoolPrimary:active {
+  filter: brightness(0.98);
+  transform: translateY(0px);
+}
+
+.msBtnCoolPrimary .btnIcon {
+  width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+}
+
+.msBtnCoolPrimary .btnIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.isDisabledLink {
+  opacity: 0.55;
+  pointer-events: none;
+  filter: none;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subjectCard,
+  .subjectCardArrow,
+  .resourceCard,
+  .msBtnCoolPrimary,
+  .topPill,
+  button,
+  .chipBtn {
+    transition: none !important;
+    transform: none !important;
+  }
+}
