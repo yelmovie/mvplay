@@ -44,7 +44,6 @@ for delete
 to public
 using (false);
 
-
-
-
-
+-- Explicit Data API privileges; table grants do not bypass existing RLS.
+grant insert on table public.suggestions to anon;
+grant select, update on table public.suggestions to service_role;
